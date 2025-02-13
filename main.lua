@@ -37,55 +37,6 @@ function init()
 end
 init()
 
-
-
-function Game:start_up()
-   print("hey--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------")
-    -- for i=1,profile_count do
-    --     print("l")
-    --     if not G.PROFILES[i] then
-    --         G.PROFILES[i] = {}
-    --         print("lol")
-    --     end
-    -- end
-end
-function Game:init()
-   print("init--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------")
-    -- for i=1,profile_count do
-    --     print("l")
-    --     if not G.PROFILES[i] then
-    --         G.PROFILES[i] = {}
-    --         print("lol")
-    --     end
-    -- end
-end
-
--- putting the saturn button on the main menu
-
--- local create_UIBox_main_menu_buttons_ref = create_UIBox_main_menu_buttons
--- function create_UIBox_main_menu_buttons()
-    
---    local text_scale = 0.45
---     local extra_profiles_button = UIBox_button{button = 'extra_profiles_button', colour = G.C.ORANGE, minw = 2.65, minh = 1.35, label = {"Hey :)"}, scale = text_scale * 1.2, col = true}
--- --   local extra_profiles_button = UIBox_button({
--- --     id = "extra_profiles_button",
--- --     minh = 1.35,
--- --     minw = 1.85,
--- --     col = true,
--- --     button = "extra_profiles_button",
--- --     colour = G.C.FOIL,
--- --     label = { "Profiles+" },
--- --     scale = text_scale * 1.2,
--- --   })
---    local menu = create_UIBox_main_menu_buttons_ref()
---    local spacer = G.F_QUIT_BUTTON and { n = G.UIT.C, config = { align = "cm", minw = 0.2 }, nodes = {} } or nil
---    table.insert(menu.nodes[1].nodes[1].nodes[2].nodes, 2, spacer)
---    table.insert(menu.nodes[1].nodes[1].nodes[2].nodes, 3, extra_profiles_button)
---    menu.nodes[1].nodes[1].config =
---      { align = "cm", padding = 0.15, r = 0.1, emboss = 0.1, colour = G.C.L_BLACK, mid = true }
---   return menu
--- end
-
 function G.FUNCS.extra_profiles_button()
     G.UIDEF.profile_select()
 end
