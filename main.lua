@@ -47,7 +47,7 @@ function G.UIDEF.profile_select()
     local tabs = {}
     for i=1,profile_count do
         tabs[i] = {
-            label = i,
+            label = G.PROFILES[i].name and G.PROFILES[i].name or i,
             chosen = G.focused_profile == i,
             tab_definition_function = G.UIDEF.profile_option,
             tab_definition_function_args = i
