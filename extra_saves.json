@@ -1,0 +1,13 @@
+{
+	"id": "extra_saves",
+	"name": "Extra Saves",
+	"display_name": "Extra Saves",
+	"author": ["Dust"],
+	"description": ":)",
+	"prefix": "sav",
+	"main_file": "main.lua",
+	"priority": 0,
+	"badge_colour": "5729e0",
+	"version": "0.0.1",
+	"dependencies": ["Steamodded (>=1.0.0~ALPHA-1314c)"]
+}
