@@ -12,7 +12,11 @@ function G.FUNCS.deliberately_load_profile_wrapper(delete_prof_data)
 end
 
 function automatically_load_profile() 
-    local selected_profile = STR_UNPACK(get_compressed(selected_profile_filename))
+    local file_contents = get_compressed(selected_profile_filename)
+    if not file_contents then
+      return
+    end
+    local selected_profile = STR_UNPACK(file_contents)
     print(":)")
     print(selected_profile)
     print(selected_profile[1])
