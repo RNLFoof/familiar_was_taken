@@ -3,9 +3,6 @@ local selected_profile_filename = "fwt_selected_profile.jkr"
 
 
 function G.FUNCS.deliberately_load_profile_wrapper(delete_prof_data)
-    print("bro?--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------")
-    print("Saving")
-    print(G.focused_profile)
     compress_and_save(selected_profile_filename, {G.focused_profile})
     -- Game:load_profile(delete_prof_data)
     print("jk")
@@ -17,13 +14,9 @@ function automatically_load_profile()
       return
     end
     local selected_profile = STR_UNPACK(file_contents)
-    print(":)")
-    print(selected_profile)
-    print(selected_profile[1])
+
     if selected_profile then
         Game:load_profile(selected_profile[1])
-    else
-        print("hmm...")
     end
 end
 
@@ -35,12 +28,9 @@ G.FUNCS.can_load_profile_wrapper = function(e)
   end
 
 function init()
-    print("heygggg--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------")
     for i=1,profile_count do
-        print("l")
         if not G.PROFILES[i] then
             G.PROFILES[i] = {}
-            print("lol")
         end
     end
 
@@ -99,42 +89,41 @@ end
 
 function create_UIBox_profile_button()
 
-    local letters = {}
-    if G.F_DISP_USERNAME then
-      for _, c in utf8.chars(G.F_DISP_USERNAME) do
-        local _char = c
-        local leng = G.LANGUAGES['all1'].font.FONT:hasGlyphs(c)
-        letters[#letters+1] = {n=G.UIT.T, config={lang = G.LANGUAGES[leng and 'all1' or 'all2'],text = _char, scale = 0.3, colour = mix_colours(G.C.GREEN, G.C.WHITE, 0.7), shadow = true}}
-      end
+  local letters = {}
+  if G.F_DISP_USERNAME then
+    for _, c in utf8.chars(G.F_DISP_USERNAME) do
+      local _char = c
+      local leng = G.LANGUAGES['all1'].font.FONT:hasGlyphs(c)
+      letters[#letters+1] = {n=G.UIT.T, config={lang = G.LANGUAGES[leng and 'all1' or 'all2'],text = _char, scale = 0.3, colour = mix_colours(G.C.GREEN, G.C.WHITE, 0.7), shadow = true}}
     end
-  
-    if not G.PROFILES[G.SETTINGS.profile].name then 
-      G.PROFILES[G.SETTINGS.profile].name = "P"..G.SETTINGS.profile
-    end
-  
-   return {n=G.UIT.ROOT, config = {align = "cm", colour = G.C.CLEAR}, nodes={
-      {n=G.UIT.R, config={align = "cm", padding = 0.2, r = 0.1, emboss = 0.1, colour = G.C.L_BLACK}, nodes={
-        {n=G.UIT.R, config={align = "cm"}, nodes={
-          {n=G.UIT.T, config={text = localize('k_profile') .. " (Cool version)", scale = 0.4, colour = G.C.UI.TEXT_LIGHT, shadow = true}}
-        }},
-        {n=G.UIT.R, config={align = "cm"}, nodes={
-          {n=G.UIT.C, config={align = "cm", padding = 0.15, minw = 2, minh = 10.8, maxw = 2, r = 0.1, hover = true, colour = mix_colours(G.C.WHITE, G.C.GREY, 0.2), button = 'profile_select', shadow = true}, nodes={
-            {n=G.UIT.T, config={ref_table = G.PROFILES[G.SETTINGS.profile], ref_value = 'name', scale = 0.4, colour = G.C.UI.TEXT_LIGHT, shadow = true}}
-          }},
-        }}
-      }},
-      G.F_DISP_USERNAME and {n=G.UIT.R, config={align = "cm"}, nodes={
-        {n=G.UIT.R, config={align = "cm"}, nodes={
-          {n=G.UIT.T, config={text = localize('k_playing_as'), scale = 0.3, colour = G.C.UI.TEXT_LIGHT, shadow = true}}
-        }},
-        {n=G.UIT.R, config={align = "cm", minh = 0.12}, nodes={}},
-        {n=G.UIT.R, config={align = "cm", maxw = 2}, nodes=letters}
-      }} or nil,
-    }}
   end
 
+  if not G.PROFILES[G.SETTINGS.profile].name then 
+    G.PROFILES[G.SETTINGS.profile].name = "P"..G.SETTINGS.profile
+  end
+
+ return {n=G.UIT.ROOT, config = {align = "cm", colour = G.C.CLEAR}, nodes={
+    {n=G.UIT.R, config={align = "cm", padding = 0.2, r = 0.1, emboss = 0.1, colour = G.C.L_BLACK}, nodes={
+      {n=G.UIT.R, config={align = "cm"}, nodes={
+        {n=G.UIT.T, config={text = localize('k_profile'), scale = 0.4, colour = G.C.UI.TEXT_LIGHT, shadow = true}}
+      }},
+      {n=G.UIT.R, config={align = "cm"}, nodes={
+        {n=G.UIT.C, config={align = "cm", padding = 0.15, minw = 2, minh = 0.8, maxw = 2, r = 0.1, hover = true, colour = mix_colours(G.C.WHITE, G.C.GREY, 0.2), button = 'profile_select', shadow = true}, nodes={
+          {n=G.UIT.T, config={ref_table = G.PROFILES[G.SETTINGS.profile], ref_value = 'name', scale = 0.4, colour = G.C.UI.TEXT_LIGHT, shadow = true}}
+        }},
+      }}
+    }},
+    G.F_DISP_USERNAME and {n=G.UIT.R, config={align = "cm"}, nodes={
+      {n=G.UIT.R, config={align = "cm"}, nodes={
+        {n=G.UIT.T, config={text = localize('k_playing_as'), scale = 0.3, colour = G.C.UI.TEXT_LIGHT, shadow = true}}
+      }},
+      {n=G.UIT.R, config={align = "cm", minh = 0.12}, nodes={}},
+      {n=G.UIT.R, config={align = "cm", maxw = 2}, nodes=letters}
+    }} or nil,
+  }}
+end
+
 function G.FUNCS.extra_profiles_button()
-    print("lolol")
     G.UIDEF.profile_select()
 end
 
@@ -163,7 +152,6 @@ function G.UIDEF.profile_select()
   
   function G.UIDEF.profile_option(_profile)
     -- New
-    print("this DOES run, right? ---------------------------------------------------------------------------------------------")
     if not G.PROFILES[_profile] then
         G.PROFILES[_profile] = {}
     end
@@ -231,7 +219,7 @@ function G.UIDEF.profile_select()
                     nodes={{
                         n=G.UIT.T, 
                         config={
-                            text = _profile == G.SETTINGS.profile and localize('b_current_profile') or profile_data and localize('b_load_profile').."burp" or localize('b_create_profile'), 
+                            text = _profile == G.SETTINGS.profile and localize('b_current_profile') or profile_data and localize('b_load_profile') or localize('b_create_profile'), 
                             ref_value = 'load_button_text', 
                             scale = 0.5, 
                             colour = G.C.UI.TEXT_LIGHT
