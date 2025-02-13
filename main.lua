@@ -4,8 +4,7 @@ local selected_profile_filename = "fwt_selected_profile.jkr"
 
 function G.FUNCS.deliberately_load_profile_wrapper(delete_prof_data)
     compress_and_save(selected_profile_filename, {G.focused_profile})
-    -- Game:load_profile(delete_prof_data)
-    print("jk")
+    G.FUNCS.load_profile(delete_prof_data)  -- I'm playing with fire here. what does delete_prof_data DO
 end
 
 function automatically_load_profile() 
