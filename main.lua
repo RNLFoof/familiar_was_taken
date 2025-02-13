@@ -1,13 +1,51 @@
 local profile_count = 8
+local selected_profile_filename = "familiar_selected_profile.jkr"
 
-print("heygggg--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------")
-for i=1,profile_count do
-    print("l")
-    if not G.PROFILES[i] then
-        G.PROFILES[i] = {}
-        print("lol")
+
+function G.FUNCS.deliberately_load_profile_wrapper(delete_prof_data)
+    print("bro?--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------")
+    print("Saving")
+    print(G.focused_profile)
+    compress_and_save(selected_profile_filename, {G.focused_profile})
+    -- Game:load_profile(delete_prof_data)
+    print("jk")
+end
+
+function automatically_load_profile() 
+    local selected_profile = STR_UNPACK(get_compressed(selected_profile_filename))
+    print(":)")
+    print(selected_profile)
+    print(selected_profile[1])
+    if selected_profile then
+        Game:load_profile(selected_profile[1])
+    else
+        print("hmm...")
     end
 end
+
+G.FUNCS.can_load_profile_wrapper = function(e)
+    G.FUNCS.can_load_profile(e)
+    if e.config.button == 'load_profile' then
+        e.config.button = 'deliberately_load_profile_wrapper'
+    end
+  end
+
+function init()
+    print("heygggg--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------")
+    for i=1,profile_count do
+        print("l")
+        if not G.PROFILES[i] then
+            G.PROFILES[i] = {}
+            print("lol")
+        end
+    end
+
+    automatically_load_profile()
+end
+init()
+
+
+
 function Game:start_up()
    print("hey--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------")
     -- for i=1,profile_count do
@@ -121,7 +159,7 @@ function G.UIDEF.profile_select()
   
   function G.UIDEF.profile_option(_profile)
     -- New
-    print("uh")
+    print("this DOES run, right? ---------------------------------------------------------------------------------------------")
     if not G.PROFILES[_profile] then
         G.PROFILES[_profile] = {}
     end
@@ -170,11 +208,33 @@ function G.UIDEF.profile_select()
             }} or nil,
           }},
           {n=G.UIT.R, config={align = "cm", padding = 0.2}, nodes={
-            {n=G.UIT.R, config={align = "cm", padding = 0}, nodes={
-              {n=G.UIT.R, config={align = "cm", minw = 4, maxw = 4, minh = 0.8, padding = 0.2, r = 0.1, hover = true, colour = G.C.BLUE,func = 'can_load_profile', button = "load_profile", shadow = true, focus_args = {nav = 'wide'}}, nodes={
-                {n=G.UIT.T, config={text = _profile == G.SETTINGS.profile and localize('b_current_profile') or profile_data and localize('b_load_profile') or localize('b_create_profile'), ref_value = 'load_button_text', scale = 0.5, colour = G.C.UI.TEXT_LIGHT}}
-              }}
-            }},
+            {n=G.UIT.R, config={align = "cm", padding = 0},
+                nodes={{
+                    n=G.UIT.R, config={
+                        align = "cm", 
+                        minw = 4, 
+                        maxw = 4, 
+                        minh = 0.8, 
+                        padding = 0.2, 
+                        r = 0.1, 
+                        hover = true, 
+                        colour = G.C.BLUE,
+                        func = 'can_load_profile_wrapper', 
+                        button = "this doesn't matter lololololol boy it'll be really embarassing if this text shows up in an error message", 
+                        shadow = true, 
+                        focus_args = {nav = 'wide'}
+                    }, 
+                    nodes={{
+                        n=G.UIT.T, 
+                        config={
+                            text = _profile == G.SETTINGS.profile and localize('b_current_profile') or profile_data and localize('b_load_profile').."burp" or localize('b_create_profile'), 
+                            ref_value = 'load_button_text', 
+                            scale = 0.5, 
+                            colour = G.C.UI.TEXT_LIGHT
+                        }
+                    }}
+                }}
+            },
             {n=G.UIT.R, config={align = "cm", padding = 0, minh = 0.7}, nodes={
               {n=G.UIT.R, config={align = "cm", minw = 3, maxw = 4, minh = 0.6, padding = 0.2, r = 0.1, hover = true, colour = G.C.RED,func = 'can_delete_profile', button = "delete_profile", shadow = true, focus_args = {nav = 'wide'}}, nodes={
                 {n=G.UIT.T, config={text = _profile == G.SETTINGS.profile and localize('b_reset_profile') or localize('b_delete_profile'), scale = 0.3, colour = G.C.UI.TEXT_LIGHT}}
