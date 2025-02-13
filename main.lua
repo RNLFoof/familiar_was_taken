@@ -1,19 +1,6 @@
 local profile_count = 8
 local selected_profile_filename = "fwt_selected_profile.jkr"
 
-G.FUNCS.profile_select = function(e)
-  G.SETTINGS.paused = true
-  G.focused_profile = G.SETTINGS.profile
-
-  for i = 1, profile_count do
-    if i ~= G.focused_profile and love.filesystem.getInfo(i..'/'..'profile.jkr') then G:load_profile(i) end
-  end
-  G:load_profile(G.focused_profile)
-
-  G.FUNCS.overlay_menu{
-    definition = G.UIDEF.profile_select(),
-  }
-end
 
 function G.FUNCS.deliberately_load_profile_wrapper(delete_prof_data)
     compress_and_save(selected_profile_filename, {G.focused_profile})
@@ -55,10 +42,13 @@ function G.FUNCS.extra_profiles_button()
 end
 
 function G.UIDEF.profile_select()
+
+
     G.focused_profile = G.focused_profile or G.SETTINGS.profile or 1
     
     local tabs = {}
     for i=1,profile_count do
+        if love.filesystem.getInfo(i..'/'..'profile.jkr') then G:load_profile(i) end
         tabs[i] = {
             label = G.PROFILES[i].name and G.PROFILES[i].name or i,
             chosen = G.focused_profile == i,
@@ -66,6 +56,7 @@ function G.UIDEF.profile_select()
             tab_definition_function_args = i
         }
     end
+    G:load_profile(G.focused_profile)
 
     local t = create_UIBox_generic_options({padding = 0,contents ={
         {n=G.UIT.R, config={align = "cm", padding = 0, draw_layer = 1, minw = 4}, nodes={
