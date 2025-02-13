@@ -1,5 +1,5 @@
 local profile_count = 8
-local selected_profile_filename = "familiar_selected_profile.jkr"
+local selected_profile_filename = "fwt_selected_profile.jkr"
 
 
 function G.FUNCS.deliberately_load_profile_wrapper(delete_prof_data)
