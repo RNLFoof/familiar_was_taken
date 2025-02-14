@@ -112,49 +112,6 @@ function G.UIDEF.fwt_the_big_boy()
   }}
 end
 
--- function G.FUNCS.extra_profiles_button()
---   G.UIDEF.profile_select()
--- end
-
-function create_UIBox_profile_button()
-
-  local letters = {}
-  if G.F_DISP_USERNAME then
-    for _, c in utf8.chars(G.F_DISP_USERNAME) do
-      local _char = c
-      local leng = G.LANGUAGES['all1'].font.FONT:hasGlyphs(c)
-      letters[#letters+1] = {n=G.UIT.T, config={lang = G.LANGUAGES[leng and 'all1' or 'all2'],text = _char, scale = 0.3, colour = mix_colours(G.C.GREEN, G.C.WHITE, 0.7), shadow = true}}
-    end
-  end
-
-  if not G.PROFILES[G.SETTINGS.profile].name then 
-    G.PROFILES[G.SETTINGS.profile].name = "P"..G.SETTINGS.profile
-  end
-
- return {n=G.UIT.ROOT, config = {align = "cm", colour = G.C.CLEAR}, nodes={
-    {n=G.UIT.R, config={align = "cm", padding = 0.2, r = 0.1, emboss = 0.1, colour = G.C.L_BLACK}, nodes={
-      {n=G.UIT.R, config={align = "cm"}, nodes={
-        {n=G.UIT.T, config={text = localize('k_profile')..":)", scale = 0.4, colour = G.C.UI.TEXT_LIGHT, shadow = true}}
-      }},
-      {n=G.UIT.R, config={align = "cm"}, nodes={
-        {n=G.UIT.C, config={align = "cm", padding = 0.15, minw = 2, minh = 0.8, maxw = 2, r = 0.1, hover = true, colour = mix_colours(G.C.WHITE, G.C.GREY, 0.2), button = 'profile_select', shadow = true}, nodes={
-          {n=G.UIT.T, config={ref_table = G.PROFILES[G.SETTINGS.profile], ref_value = 'name', scale = 0.4, colour = G.C.UI.TEXT_LIGHT, shadow = true}}
-        }},
-      }}
-    }},
-    G.F_DISP_USERNAME and {n=G.UIT.R, config={align = "cm"}, nodes={
-      {n=G.UIT.R, config={align = "cm"}, nodes={
-        {n=G.UIT.T, config={text = localize('k_playing_as'), scale = 0.3, colour = G.C.UI.TEXT_LIGHT, shadow = true}}
-      }},
-      {n=G.UIT.R, config={align = "cm", minh = 0.12}, nodes={}},
-      {n=G.UIT.R, config={align = "cm", maxw = 2}, nodes=letters}
-    }} or nil,
-    -- {n=G.UIT.C, config={align = "cm", padding = 0.15, button = 'profile_select'}, nodes={
-    --   {n=G.UIT.T, config={text="hi", colour=G.C.UI.TEXT_LIGHT, scale=1}}
-    -- }}
-  }}
-end
-
 function G.UIDEF.fwt_profile_list(from_game_over)
   G.CHALLENGE_PAGE_SIZE = 10
   local challenge_pages = {}
