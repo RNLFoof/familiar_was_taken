@@ -1,4 +1,7 @@
-local profile_count = 8
+local pages_of_profiles = 4
+local profiles_per_page = 8
+local profile_count = pages_of_profiles * profiles_per_page
+local current_page = 1
 local selected_profile_filename = "fwt_selected_profile.jkr"
 
 
@@ -24,7 +27,17 @@ G.FUNCS.can_load_profile_wrapper = function(e)
     if e.config.button == 'load_profile' then
         e.config.button = 'deliberately_load_profile_wrapper'
     end
-  end
+end
+
+local the_box = nil
+function G.FUNCS.extra_profiles_button()
+  the_box = G.UIDEF.profile_select()
+end
+
+G.FUNCS.change_viewed_profile_page = function(args)
+  current_page = args.to_key
+  the_box.UIBox:recalculate()
+end
 
 function init()
     for i=1,profile_count do
@@ -37,35 +50,52 @@ function init()
 end
 init()
 
-function G.FUNCS.extra_profiles_button()
-    G.UIDEF.profile_select()
-end
-
 function G.UIDEF.profile_select()
 
 
     G.focused_profile = G.focused_profile or G.SETTINGS.profile or 1
     
-    local tabs = {}
-    for i=1,profile_count do
-        if love.filesystem.getInfo(i..'/'..'profile.jkr') then G:load_profile(i) end
-        tabs[i] = {
-            label = G.PROFILES[i].name and G.PROFILES[i].name or i,
-            chosen = G.focused_profile == i,
-            tab_definition_function = G.UIDEF.profile_option,
-            tab_definition_function_args = i,
-        }
+    local pages = {    }
+    for i=1,pages_of_profiles do
+      pages[i] = "Page "..i
     end
+
+    local tabs = {}
+    local show_this_profile = 1
+    for i=1,profiles_per_page do
+        local profile_index = profiles_per_page*(current_page-1)+i
+        if love.filesystem.getInfo(i..'/'..'profile.jkr') then G:load_profile(profile_index) end
+        tabs[i] = {
+            label = G.PROFILES[i].name and G.PROFILES[profile_index].name or profile_index,
+            chosen = G.focused_profile == profile_index,
+            tab_definition_function = G.UIDEF.profile_option,
+            tab_definition_function_args = profile_index,
+        }
+        if tabs[i].chosen then
+          show_this_profile = i
+        end
+    end
+    tabs[show_this_profile].chosen = true
+    
     G:load_profile(G.focused_profile)
 
     local t = create_UIBox_generic_options({padding = 0,contents ={
         {n=G.UIT.R, config={align = "cm", padding = 0, draw_layer = 1, minw = 4}, nodes={
+          create_option_cycle({
+            options=pages,
+            opt_callback="change_viewed_profile_page",
+            scale=0.5,
+            text_scale=0.25,
+            current_option=current_page
+          }
+          ),
           create_tabs(
           {
             tabs = tabs,
             scale=0.5,
             text_scale=0.25,
-            snap_to_nav = true
+            snap_to_nav = true,
+            current=show_this_profile
           }),
         }},
     }})
