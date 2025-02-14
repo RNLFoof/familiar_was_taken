@@ -53,7 +53,7 @@ function G.UIDEF.profile_select()
             label = G.PROFILES[i].name and G.PROFILES[i].name or i,
             chosen = G.focused_profile == i,
             tab_definition_function = G.UIDEF.profile_option,
-            tab_definition_function_args = i
+            tab_definition_function_args = i,
         }
     end
     G:load_profile(G.focused_profile)
@@ -61,8 +61,12 @@ function G.UIDEF.profile_select()
     local t = create_UIBox_generic_options({padding = 0,contents ={
         {n=G.UIT.R, config={align = "cm", padding = 0, draw_layer = 1, minw = 4}, nodes={
           create_tabs(
-          {tabs = tabs,
-          snap_to_nav = true}),
+          {
+            tabs = tabs,
+            scale=0.5,
+            text_scale=0.25,
+            snap_to_nav = true
+          }),
         }},
     }})
     return t
