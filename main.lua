@@ -41,85 +41,17 @@ init()
 --     G.UIDEF.profile_select()
 -- end
 
-function G.UIDEF.fwt_the_big_boy()
 
-  if G.PROFILES[G.SETTINGS.profile].all_unlocked then G.PROFILES[G.SETTINGS.profile].challenges_unlocked = #G.CHALLENGES end
-
-  if not G.PROFILES[G.SETTINGS.profile].challenges_unlocked then
-    local deck_wins = 0
-    for k, v in pairs(G.PROFILES[G.SETTINGS.profile].deck_usage) do
-      if v.wins and v.wins[1] then
-        deck_wins = deck_wins + 1
-      end
-    end
-    local loc_nodes = {}
-    localize{type = 'descriptions', key = 'challenge_locked', set = 'Other', nodes = loc_nodes, vars = {G.CHALLENGE_WINS, deck_wins}, default_col = G.C.WHITE}
-
-    return {n=G.UIT.ROOT, config={align = "cm", padding = 0.1, colour = G.C.CLEAR, minh = 8.02, minw = 7}, nodes={
-      transparent_multiline_text(loc_nodes)
-    }}
-  end
-
-  G.run_setup_seed = nil
-  if G.OVERLAY_MENU then 
-    local seed_toggle = G.OVERLAY_MENU:get_UIE_by_ID('run_setup_seed')
-    if seed_toggle then seed_toggle.states.visible = false end
-  end
-
-  
-  local _ch_comp, _ch_tot = 0,#G.CHALLENGES
-  for k, v in ipairs(G.CHALLENGES) do
-    if v.id and G.PROFILES[G.SETTINGS.profile].challenge_progress.completed[v.id or ''] then
-      _ch_comp = _ch_comp + 1
-    end
-  end
-
-  local _ch_tab = {comp = _ch_comp, unlocked = G.PROFILES[G.SETTINGS.profile].challenges_unlocked}
-
-  return {n=G.UIT.ROOT, config={align = "cm", padding = 0.1, colour = G.C.CLEAR, minh = 8, minw = 7}, nodes={
-    {n=G.UIT.R, config={align = "cm", padding = 0.1, r = 0.1 ,colour = G.C.BLACK}, nodes={
-      {n=G.UIT.R, config={align = "cm", padding = 0.1}, nodes={
-        {n=G.UIT.T, config={text = localize('k_challenge_mode'), scale = 0.4, colour = G.C.UI.TEXT_LIGHT, shadow = true}},
-      }},
-      {n=G.UIT.R, config={align = "cm", minw = 8.5, minh = 1.5, padding = 0.2}, nodes={
-        --UIBox_button({id = from_game_over and 'from_game_over' or nil, label = {localize('b_new_challenge')}, button = 'fwt_profile_list', minw = 4, scale = 0.4, minh = 0.6}),
-      }},
-      {n=G.UIT.R, config={align = "cm", minh = 0.8, r = 0.1, minw = 4.5, colour = G.C.L_BLACK, emboss = 0.05,
-      progress_bar = {
-        max = _ch_tot, ref_table = _ch_tab, ref_value = 'unlocked', empty_col = G.C.L_BLACK, filled_col = G.C.FILTER
-      }}, nodes={
-        {n=G.UIT.C, config={align = "cm", padding = 0.05, r = 0.1, minw = 4.5}, nodes={
-          {n=G.UIT.T, config={text = localize{type = 'variable', key = 'unlocked', vars = {_ch_tab.unlocked, _ch_tot}}, scale = 0.3, colour = G.C.WHITE, shadow =true}},
-        }},
-      }},
-      {n=G.UIT.R, config={align = "cm", minh = 0.8, r = 0.1, minw = 4.5, colour = G.C.L_BLACK, emboss = 0.05,
-      progress_bar = {
-        max = _ch_tot, ref_table = _ch_tab, ref_value = 'comp', empty_col = G.C.L_BLACK, filled_col = adjust_alpha(G.C.GREEN, 0.5)
-      }}, nodes={
-        {n=G.UIT.C, config={align = "cm", padding = 0.05, r = 0.1, minw = 4.5}, nodes={
-          {n=G.UIT.T, config={text = localize{type = 'variable', key = 'completed', vars = {_ch_comp, _ch_tot}}, scale = 0.3, colour = G.C.WHITE, shadow = true}},
-        }},
-      }},
-    }},
-    G.F_DAILIES and {n=G.UIT.R, config={align = "cm", padding = 0.1, r = 0.1 ,colour = G.C.BLACK}, nodes={
-      {n=G.UIT.R, config={align = "cm", padding = 0.1}, nodes={
-        {n=G.UIT.T, config={text = localize('k_daily_run'), scale = 0.4, colour = G.C.UI.TEXT_LIGHT, shadow = true}},
-      }},
-      {n=G.UIT.R, config={align = "cl", minw = 8.5, minh = 4}, nodes={
-        G.UIDEF.daily_overview()
-      }}
-    }} or nil,
-  }}
-end
 
 function G.UIDEF.fwt_profile_list(from_game_over)
+  print("-------------------------------------------------------3")
   G.CHALLENGE_PAGE_SIZE = 10
   local challenge_pages = {}
   for i = 1, math.ceil(#G.CHALLENGES/G.CHALLENGE_PAGE_SIZE) do
     table.insert(challenge_pages, localize('k_page')..' '..tostring(i)..'/'..tostring(math.ceil(#G.CHALLENGES/G.CHALLENGE_PAGE_SIZE)))
   end
   G.E_MANAGER:add_event(Event({func = (function()
-    G.FUNCS.change_fwt_profile_list_page{cycle_config = {current_option = 1}}
+    G.FUNCS.fwt_change_profile_list_page{cycle_config = {current_option = 1}}
   return true end)}))
 
   local _ch_comp, _ch_tot = 0,#G.CHALLENGES
@@ -130,14 +62,14 @@ function G.UIDEF.fwt_profile_list(from_game_over)
   end
 
   local t = create_UIBox_generic_options({ back_id = from_game_over and 'from_game_over' or nil, back_func = 'setup_run', back_id = 'fwt_profile_list', contents = {
-    {n=G.UIT.C, config={align = "cm", padding = 0.0}, nodes={
+    {n=G.UIT.C, config={align = "cm", padding = 0.0, colour=G.C.GREEN}, nodes={
       {n=G.UIT.R, config={align = "cm", padding = 0.1, minh = 7, minw = 4.2}, nodes={
         {n=G.UIT.O, config={id = 'fwt_profile_list', object = Moveable()}},
       }},
-      {n=G.UIT.R, config={align = "cm", padding = 0.1}, nodes={
-        create_option_cycle({id = 'challenge_page',scale = 0.9, h = 0.3, w = 3.5, options = challenge_pages, cycle_shoulders = true, opt_callback = 'change_fwt_profile_list_page', current_option = 1, colour = G.C.RED, no_pips = true, focus_args = {snap_to = true}})
+      {n=G.UIT.R, config={align = "cm", padding = 0.1, colour=G.C.RED}, nodes={
+        create_option_cycle({id = 'challenge_page',scale = 0.9, h = 0.3, w = 3.5, options = challenge_pages, cycle_shoulders = true, opt_callback = 'fwt_change_profile_list_page', current_option = 1, colour = G.C.RED, no_pips = true, focus_args = {snap_to = true}})
       }},
-      {n=G.UIT.R, config={align = "cm", padding = 0.1}, nodes={
+      {n=G.UIT.R, config={align = "cm", padding = 0.1, colour=G.C.MONEY}, nodes={
         {n=G.UIT.T, config={text = localize{type = 'variable', key = 'challenges_completed', vars = {_ch_comp, _ch_tot}}, scale = 0.4, colour = G.C.WHITE}},
       }},
 
@@ -150,9 +82,51 @@ function G.UIDEF.fwt_profile_list(from_game_over)
 end
 
 function G.UIDEF.fwt_profile_list_page(_page)
+  print("-------------------------------------------------------1")
   local snapped = false
   local fwt_profile_list = {}
-  for k, v in ipairs(G.CHALLENGES) do
+  for k, v in ipairs({
+    {
+        name = 'The Omelette',
+        id = 'c_omelette_1',
+        rules = {
+            custom = {
+                {id = 'no_reward'},
+                {id = 'no_extra_hand_money'},
+                {id = 'no_interest'}
+            },
+            modifiers = {
+            }
+        },
+        jokers = {
+            {id = 'j_egg'},
+            {id = 'j_egg'},
+            {id = 'j_egg'},
+            {id = 'j_egg'},
+            {id = 'j_egg'},
+        },
+        consumeables = {
+        },
+        vouchers = {
+        },
+        deck = {
+            type = 'Challenge Deck'
+        },
+        restrictions = {
+            banned_cards = {
+                {id = 'v_seed_money'},
+                {id = 'v_money_tree'},
+                {id = 'j_to_the_moon'},
+                {id = 'j_rocket'},
+                {id = 'j_golden'},
+                {id = 'j_satellite'},
+            },
+            banned_tags = {
+            },
+            banned_other = {
+            }
+        }
+    }}) do
     if k > G.CHALLENGE_PAGE_SIZE*(_page or 0) and k <= G.CHALLENGE_PAGE_SIZE*((_page or 0) + 1) then
       if G.CONTROLLER.focused.target and G.CONTROLLER.focused.target.config.id == 'challenge_page' then snapped = true end
       local challenge_completed =  G.PROFILES[G.SETTINGS.profile].challenge_progress.completed[v.id or '']
@@ -163,9 +137,9 @@ function G.UIDEF.fwt_profile_list_page(_page)
         {n=G.UIT.C, config={align = 'cl', minw = 0.8}, nodes = {
           {n=G.UIT.T, config={text = k..'', scale = 0.4, colour = G.C.WHITE}},
         }},
-        UIBox_button({id = k, col = true, label = {challenge_unlocked and localize(v.id, 'challenge_names') or localize('k_locked'),}, button = challenge_unlocked and 'change_challenge_description' or 'nil', colour = challenge_unlocked and G.C.RED or G.C.GREY, minw = 4, scale = 0.4, minh = 0.6, focus_args = {snap_to = not snapped}}),
+        UIBox_button({id = k, col = true, label = {challenge_unlocked and localize(v.id, 'challenge_names') or localize('k_locked'),}, button = challenge_unlocked and 'fwt_change_profile_description' or 'nil', colour = challenge_unlocked and G.C.RED or G.C.GREY, minw = 4, scale = 0.4, minh = 0.6, focus_args = {snap_to = not snapped}}),
         {n=G.UIT.C, config={align = 'cm', padding = 0.05, minw = 0.6}, nodes = {
-          {n=G.UIT.C, config={minh = 0.4, minw = 0.4, emboss = 0.05, r = 0.1, colour = challenge_completed and G.C.GREEN or G.C.BLACK}, nodes = {
+          {n=G.UIT.C, config={minh = 0.4, minw = 0.4, emboss = 0.05, r = 0.1, colour = challenge_completed and G.C.BLUE or G.C.BLACK}, nodes = {
             challenge_completed and {n=G.UIT.O, config={object = Sprite(0,0,0.4,0.4, G.ASSET_ATLAS["icons"], {x=1, y=0})}} or nil
           }},
         }},
@@ -174,38 +148,63 @@ function G.UIDEF.fwt_profile_list_page(_page)
     end
   end
 
-  return {n=G.UIT.ROOT, config={align = "cm", padding = 0.1, colour = G.C.CLEAR}, nodes=fwt_profile_list}
+  return {n=G.UIT.ROOT, config={align = "cm", padding = 0.1, colour = G.C.GREEN}, nodes=fwt_profile_list}
 end
 
-G.FUNCS.change_fwt_profile_list_page = function(args)
+G.FUNCS.fwt_change_profile_list_page = function(args)
+  print("-------------------------------------------------------2")
   if not args or not args.cycle_config then return end
+  print("-------------------------------------------------------22")
   if G.OVERLAY_MENU then
-    local ch_list = G.OVERLAY_MENU:get_UIE_by_ID('challenge_list')
+    print("-------------------------------------------------------222")
+    local ch_list = G.OVERLAY_MENU:get_UIE_by_ID('fwt_profile_list')
     if ch_list then 
       if ch_list.config.object then 
         ch_list.config.object:remove() 
       end
+      print("-------------------------------------------------------2222")
       ch_list.config.object = UIBox{
-        definition =  G.UIDEF.challenge_list_page(args.cycle_config.current_option-1),
-        config = {offset = {x=0,y=0}, align = 'cm', parent = ch_list}
+        definition =  G.UIDEF.fwt_profile_list_page(args.cycle_config.current_option-1),
+        config = {offset = {x=0,y=0}, align = 'cm', parent = ch_list, colour=G.C.BLACK}
       }
-      G.FUNCS.change_challenge_description{config = {id = 'nil'}}
+      print("-------------------------------------------------------22222")
+      G.FUNCS.fwt_change_profile_description{config = {id = 'nil', colour=G.C.BLACK}}
     end
   end
 end
 
-G.FUNCS.deck_view_challenge = function(e)
-  G.FUNCS.overlay_menu{
-    definition = create_UIBox_generic_options({back_func = 'deck_info', contents ={
-        G.UIDEF.challenge_description(get_challenge_int_from_id(e.config.id.id or ''), nil, true)
+G.FUNCS.fwt_change_profile_description = function(e)
+  print("-------------------------------------------------------7")
+  if G.OVERLAY_MENU then
+    local desc_area = G.OVERLAY_MENU:get_UIE_by_ID('challenge_area')
+    if desc_area and desc_area.config.oid ~= e.config.id then
+      if desc_area.config.old_chosen then desc_area.config.old_chosen.config.chosen = nil end
+      e.config.chosen = 'vert'
+      if desc_area.config.object then 
+        desc_area.config.object:remove() 
+      end
+      desc_area.config.object = UIBox{
+        definition =  G.UIDEF.challenge_description(e.config.id),
+        config = {offset = {x=0,y=0}, align = 'cm', parent = desc_area}
       }
-    })
-  }
+      desc_area.config.oid = e.config.id 
+      desc_area.config.old_chosen = e
+    end
+  end
 end
+
+
+-- G.FUNCS.deck_view_challenge = function(e)
+--   G.FUNCS.overlay_menu{
+--     definition = create_UIBox_generic_options({back_func = 'deck_info', contents ={
+--         G.UIDEF.challenge_description(get_challenge_int_from_id(e.config.id.id or ''), nil, true)
+--       }
+--     })
+--   }
+-- end
 
 function G.FUNCS.profile_select(e)
   G.SETTINGS.paused = true
-  print(e)
   G.FUNCS.overlay_menu{
     definition = G.UIDEF.fwt_profile_list((false)),
   }
