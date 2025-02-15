@@ -42,52 +42,50 @@ init()
 --     G.UIDEF.profile_select()
 -- end
 
-function G.UIDEF.profile_select()
-  print("yeah can I get uuuhhhhhhh")
-  print(G.focused_profile)
-  G.focused_profile = G.SETTINGS.profile
-  print(G.focused_profile)
-  G.focused_profile = G.focused_profile or G.SETTINGS.profile or 1
-  print(G.focused_profile)
+-- So I THINK this is gone now? It's the profdile select box with the three (eight) guys on top
+-- function G.UIDEF.profile_select()
+--   print("yeah can I get uuuhhhhhhh")
+--   G.focused_profile = G.focused_profile or G.SETTINGS.profile or 1
 
-  tabs = {}
-  for i=1,profile_count do
-    if love.filesystem.getInfo(i..'/'..'profile.jkr') then G:load_profile(i) end
-    tabs[i] = {
-        label = G.PROFILES[i].name and G.PROFILES[i].name or i,
-        chosen = G.focused_profile == i,
-        tab_definition_function = G.UIDEF.profile_option,
-        tab_definition_function_args = i,
-    }
-  end
+--   tabs = {}
+--   for i=1,profile_count do
+--     if love.filesystem.getInfo(i..'/'..'profile.jkr') then G:load_profile(i) end
+--     tabs[i] = {
+--         label = G.PROFILES[i].name and G.PROFILES[i].name or i,
+--         chosen = G.focused_profile == i,
+--         tab_definition_function = G.UIDEF.profile_option,
+--         tab_definition_function_args = i,
+--     }
+--   end
 
-  local t =   create_UIBox_generic_options({padding = 0,contents ={
-      {n=G.UIT.R, config={align = "cm", padding = 0, draw_layer = 1, minw = 4}, nodes={
-        create_tabs(
-        {tabs = tabs,
-        snap_to_nav = true}),
-      }},
-  }})
-  return t
-end
+--   local t =   create_UIBox_generic_options({padding = 0,contents ={
+--       {n=G.UIT.R, config={align = "cm", padding = 0, draw_layer = 1, minw = 4}, nodes={
+--         create_tabs(
+--         {tabs = tabs,
+--         snap_to_nav = true}),
+--       }},
+--   }})
+--   return t
+-- end
 
 
 function G.UIDEF.fwt_profile_list(from_game_over)
   print("-------------------------------------------------------3")
-  local challenge_pages = {}
+  local profile_pages = {}
   for i = 1, math.ceil(profile_count/profiles_per_page) do
-    table.insert(challenge_pages, localize('k_page')..' '..tostring(i)..'/'..tostring(math.ceil(profile_count/profiles_per_page)))
+    table.insert(profile_pages, localize('k_page')..' '..tostring(i)..'/'..tostring(math.ceil(profile_count/profiles_per_page)))
   end
   G.E_MANAGER:add_event(Event({func = (function()
     G.FUNCS.fwt_change_profile_list_page{cycle_config = {current_option = 1}}
   return true end)}))
 
-  local _ch_comp, _ch_tot = 0, profile_count
-  for k, v in ipairs(G.CHALLENGES) do
-    if v.id and G.PROFILES[G.SETTINGS.profile].challenge_progress.completed[v.id or ''] then
-      _ch_comp = _ch_comp + 1
-    end
-  end
+  -- Counts completed challenges, don't care 
+  -- local _ch_comp, _ch_tot = 0, profile_count
+  -- for k, v in ipairs(G.CHALLENGES) do
+  --   if v.id and G.PROFILES[G.SETTINGS.profile].challenge_progress.completed[v.id or ''] then
+  --     _ch_comp = _ch_comp + 1
+  --   end
+  -- end
 
   local t = create_UIBox_generic_options({ back_id = from_game_over and 'from_game_over' or nil, back_func = 'setup_run', back_id = 'fwt_profile_list', contents = {
     {n=G.UIT.C, config={align = "cm", padding = 0.0, colour=G.C.GREEN}, nodes={
@@ -95,11 +93,14 @@ function G.UIDEF.fwt_profile_list(from_game_over)
         {n=G.UIT.O, config={id = 'fwt_profile_list', object = Moveable()}},
       }},
       {n=G.UIT.R, config={align = "cm", padding = 0.1, colour=G.C.RED}, nodes={
-        create_option_cycle({id = 'challenge_page',scale = 0.9, h = 0.3, w = 3.5, options = challenge_pages, cycle_shoulders = true, opt_callback = 'fwt_change_profile_list_page', current_option = 1, colour = G.C.RED, no_pips = true, focus_args = {snap_to = true}})
+        create_option_cycle({id = 'challenge_page',scale = 0.9, h = 0.3, w = 3.5, options = profile_pages, cycle_shoulders = true, opt_callback = 'fwt_change_profile_list_page',
+        current_option = 1,
+        colour = G.C.RED, no_pips = true, focus_args = {snap_to = true}})
       }},
-      {n=G.UIT.R, config={align = "cm", padding = 0.1, colour=G.C.MONEY}, nodes={
-        {n=G.UIT.T, config={text = localize{type = 'variable', key = 'challenges_completed', vars = {_ch_comp, _ch_tot}}, scale = 0.4, colour = G.C.WHITE}},
-      }},
+      -- This just lists how many challenges are completed (irrelevant)
+      -- {n=G.UIT.R, config={align = "cm", padding = 0.1, colour=G.C.MONEY}, nodes={
+      --   {n=G.UIT.T, config={text = localize{type = 'variable', key = 'challenges_completed', vars = {_ch_comp, _ch_tot}}, scale = 0.4, colour = G.C.WHITE}},
+      -- }},
 
     }},
     {n=G.UIT.C, config={align = "cm", minh = 9, minw = 11.5}, nodes={
@@ -110,6 +111,7 @@ function G.UIDEF.fwt_profile_list(from_game_over)
 end
 
 function G.UIDEF.fwt_profile_list_page(_page)
+  G.focused_profile = G.focused_profile or G.SETTINGS.profile or 1
   print("-------------------------------------------------------1")
   local snapped = false
   local fwt_profile_list = {}
@@ -119,7 +121,7 @@ function G.UIDEF.fwt_profile_list_page(_page)
       G.PROFILES[k] = {}
     end
     v = G.PROFILES[k]
-    if true then --k > profiles_per_page*(_page or 0) and k <= profiles_per_page*((_page or 0) + 1) then
+    if k > profiles_per_page*(_page or 0) and k <= profiles_per_page*((_page or 0) + 1) then
     print("hhhhhhrtjdesjghjredsjgijershjfcsejhfvbhkjdxtvhhjdfhgjikldtf")  
     if G.CONTROLLER.focused.target and G.CONTROLLER.focused.target.config.id == 'challenge_page' then snapped = true end
 
@@ -128,7 +130,7 @@ function G.UIDEF.fwt_profile_list_page(_page)
         {n=G.UIT.C, config={align = 'cl', minw = 0.8}, nodes = {
           {n=G.UIT.T, config={text = k..'', scale = 0.4, colour = G.C.WHITE}},
         }},
-        UIBox_button({id = k, col = true, label = {v.name}, button = 'fwt_change_profile_description', colour = G.C.RED, minw = 4, scale = 0.4, minh = 0.6, focus_args = {snap_to = not snapped}}),
+        UIBox_button({id = k, col = true, label = {v.name and G.focused_profile..' '..G.SETTINGS.profile..' '..k..' '..v.name or v.name}, button = 'fwt_change_profile_description', colour = G.C.RED, minw = 4, scale = 0.4, minh = 0.6, focus_args = {snap_to = not snapped}}),
         {n=G.UIT.C, config={align = 'cm', padding = 0.05, minw = 0.6}, nodes = {
           {n=G.UIT.C, config={minh = 0.4, minw = 0.4, emboss = 0.05, r = 0.1, colour = G.C.BLUE}, nodes = {
             -- challenge_completed and {n=G.UIT.O, config={object = Sprite(0,0,0.4,0.4, G.ASSET_ATLAS["icons"], {x=1, y=0})}} or nil
@@ -182,7 +184,7 @@ G.FUNCS.fwt_change_profile_description = function(e)
       end
       print("-------------------------------------------------------11")
       desc_area.config.object = UIBox{
-        definition =  G.UIDEF.profile_select(e.config.id),
+        definition =  G.UIDEF.profile_option(e.config.id),
         config = {offset = {x=0,y=0}, align = 'cm', parent = desc_area}
       }
       print("-------------------------------------------------------11yyyyyyyyyyyy")
