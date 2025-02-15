@@ -146,6 +146,9 @@ function G.UIDEF.fwt_profile_list_page(_page)
     if not G.PROFILES[k] then
       G.PROFILES[k] = {}
     end
+    if not G.PROFILES[k].name then
+      G.PROFILES[k].name = 'P'..k
+    end
     v = G.PROFILES[k]
     if k > profiles_per_page*(_page or 0) and k <= profiles_per_page*((_page or 0) + 1) then
       print("hhhhhhrtjdesjghjredsjgijershjfcsejhfvbhkjdxtvhhjdfhgjikldtf")  
