@@ -110,8 +110,34 @@ function G.UIDEF.fwt_profile_list(from_game_over)
   return t
 end
 
+function roll_focused_profile_with_page(page) 
+  -- Boy! I sure hope this makes sense
+  if not page then
+    page = 1
+  end
+
+  print("Page is "..page)
+  if G.focused_profile then
+    print("focused_profile was "..G.focused_profile)
+  end
+
+  if not G.focused_profile or G.focused_profile == 'nil' or G.focused_profile == nil then
+    G.focused_profile = 1 -- TODO this should instead pick the current profile!! but it might not be on this page!! sooooooo
+    if G.focused_profile == 'nil' or G.focused_profile == nil then
+      print("Hey if you're reading this please ask Dust to fix it so that she can say \"yeah I'll do it later\" and then never do it")
+    end
+  else
+    print(G.focused_profile)
+    -- Adding profiles_per_page because it seems to be able to be negative?
+    G.focused_profile = math.fmod(G.focused_profile -1, profiles_per_page) + (page) * profiles_per_page + 1
+    print("focused_profile is "..G.focused_profile)
+  end
+end
+
 function G.UIDEF.fwt_profile_list_page(_page)
-  G.focused_profile = G.focused_profile or G.SETTINGS.profile or 1
+  -- G.focused_profile = G.focused_profile or G.SETTINGS.profile or 1
+  roll_focused_profile_with_page(_page)
+  
   print("-------------------------------------------------------1")
   local snapped = false
   local fwt_profile_list = {}
@@ -122,22 +148,22 @@ function G.UIDEF.fwt_profile_list_page(_page)
     end
     v = G.PROFILES[k]
     if k > profiles_per_page*(_page or 0) and k <= profiles_per_page*((_page or 0) + 1) then
-    print("hhhhhhrtjdesjghjredsjgijershjfcsejhfvbhkjdxtvhhjdfhgjikldtf")  
-    if G.CONTROLLER.focused.target and G.CONTROLLER.focused.target.config.id == 'challenge_page' then snapped = true end
+      print("hhhhhhrtjdesjghjredsjgijershjfcsejhfvbhkjdxtvhhjdfhgjikldtf")  
+      if G.CONTROLLER.focused.target and G.CONTROLLER.focused.target.config.id == 'challenge_page' then snapped = true end
 
-      fwt_profile_list[#fwt_profile_list+1] = 
-      {n=G.UIT.R, config={align = "cm"}, nodes={
-        {n=G.UIT.C, config={align = 'cl', minw = 0.8}, nodes = {
-          {n=G.UIT.T, config={text = k..'', scale = 0.4, colour = G.C.WHITE}},
-        }},
-        UIBox_button({id = k, col = true, label = {v.name and G.focused_profile..' '..G.SETTINGS.profile..' '..k..' '..v.name or v.name}, button = 'fwt_change_profile_description', colour = G.C.RED, minw = 4, scale = 0.4, minh = 0.6, focus_args = {snap_to = not snapped}}),
-        {n=G.UIT.C, config={align = 'cm', padding = 0.05, minw = 0.6}, nodes = {
-          {n=G.UIT.C, config={minh = 0.4, minw = 0.4, emboss = 0.05, r = 0.1, colour = G.C.BLUE}, nodes = {
-            -- challenge_completed and {n=G.UIT.O, config={object = Sprite(0,0,0.4,0.4, G.ASSET_ATLAS["icons"], {x=1, y=0})}} or nil
+        fwt_profile_list[#fwt_profile_list+1] = 
+        {n=G.UIT.R, config={align = "cm"}, nodes={
+          {n=G.UIT.C, config={align = 'cl', minw = 0.8}, nodes = {
+            {n=G.UIT.T, config={text = k..'', scale = 0.4, colour = G.C.WHITE}},
           }},
-        }},
-      }}      
-      snapped = true
+          UIBox_button({id = k, col = true, label = {v.name and G.focused_profile..' '..G.SETTINGS.profile..' '..k..' '..v.name or v.name}, button = 'fwt_change_profile_description', colour = G.C.RED, minw = 4, scale = 0.4, minh = 0.6, focus_args = {snap_to = not snapped}}),
+          {n=G.UIT.C, config={align = 'cm', padding = 0.05, minw = 0.6}, nodes = {
+            {n=G.UIT.C, config={minh = 0.4, minw = 0.4, emboss = 0.05, r = 0.1, colour = G.C.BLUE}, nodes = {
+              -- challenge_completed and {n=G.UIT.O, config={object = Sprite(0,0,0.4,0.4, G.ASSET_ATLAS["icons"], {x=1, y=0})}} or nil
+            }},
+          }},
+        }}      
+        snapped = true
     end
   end
 
@@ -145,6 +171,14 @@ function G.UIDEF.fwt_profile_list_page(_page)
 end
 
 G.FUNCS.fwt_change_profile_list_page = function(args)
+  -- Seems the rolling args are:
+  -- from_val = from_val,
+  --     to_val = to_val,
+  --     from_key = from_key,
+  --     to_key = to_key,
+  --     cycle_config = e.config.ref_table
+  print(args)
+  roll_focused_profile_with_page(args.to_key)
   print("-------------------------------------------------------2")
   if not args or not args.cycle_config then return end
   print("-------------------------------------------------------22")
@@ -161,13 +195,14 @@ G.FUNCS.fwt_change_profile_list_page = function(args)
         config = {offset = {x=0,y=0}, align = 'cm', parent = ch_list, colour=G.C.BLACK}
       }
       print("-------------------------------------------------------22222")
-      G.FUNCS.fwt_change_profile_description{config = {id = 'nil', colour=G.C.BLACK}}
+      G.FUNCS.fwt_change_profile_description{config = {id = G.focused_profile, colour=G.C.BLACK}}
       print("-------------------------------------------------------12")
     end
   end
   print("-------------------------------------------------------13")
 end
 
+-- Seems e.config.id tells it what to change to?
 G.FUNCS.fwt_change_profile_description = function(e)
   print("-------------------------------------------------------7")
   if G.OVERLAY_MENU then
@@ -176,7 +211,11 @@ G.FUNCS.fwt_change_profile_description = function(e)
     local desc_area = G.OVERLAY_MENU:get_UIE_by_ID('challenge_area')
     if desc_area and desc_area.config.oid ~= e.config.id then
       print("-------------------------------------------------------9")
+      
+      -- Dunno what this is for and it keeps becoming nil when I don't want it to so I'm trying commenting it out
+      -- Didn't work but idkklkkkkkktrhiht
       if desc_area.config.old_chosen then desc_area.config.old_chosen.config.chosen = nil end
+      
       e.config.chosen = 'vert'
       print("-------------------------------------------------------10")
       if desc_area.config.object then 
@@ -314,7 +353,7 @@ function G.FUNCS.original_profile_behavior()
                     nodes={{
                         n=G.UIT.T, 
                         config={
-                            text = _profile == G.SETTINGS.profile and localize('b_current_profile') or profile_data and localize('b_load_profile') or localize('b_create_profile'), 
+                            text = _profile == G.SETTINGS.profile and localize('b_current_profile').._profile or profile_data and localize('b_load_profile').._profile or localize('b_create_profile').._profile, 
                             ref_value = 'load_button_text', 
                             scale = 0.5, 
                             colour = G.C.UI.TEXT_LIGHT
