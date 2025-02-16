@@ -163,7 +163,7 @@ function roll_focused_profile_with_page(page)
 end
 
 -- The actual list part, like, the numbered rows, and their container
--- Said container is in its own container in 
+-- Said container is in its own container in create_UIBox_generic_options
 function G.UIDEF.fwt_profile_list_page(_page)
   -- G.focused_profile = G.focused_profile or G.SETTINGS.profile or 1
   roll_focused_profile_with_page(_page)
@@ -328,6 +328,22 @@ function G.UIDEF.profile_option(_profile)
         G.PROFILES[_profile] = {}
     end
 
+    -- So the text prompt for entering a name was super misaligned, not even in the box
+    -- no idea why
+    -- but if you put a second input after it, *that* one works
+    -- and if you put a second input *before* it, the *original* works
+    -- I am not paid
+    funny_fix = create_text_input({
+      w = 0,
+      padding=0,
+      h=0,
+      prompt_text = '',
+      ref_table = {uh=''}, ref_value = 'uh',
+    })
+    funny_fix.config.scale=0
+    funny_fix.nodes[1].config.padding=0
+    funny_fix.nodes[1].nodes[1].config.padding=0
+
     -- Original
 
     set_discover_tallies()
@@ -341,22 +357,80 @@ function G.UIDEF.profile_option(_profile)
   
     local lwidth, rwidth, scale = 1, 1, 1
     G.CHECK_PROFILE_DATA = nil
-    local t = {n=G.UIT.ROOT, config={align = 'cm', colour = G.C.CLEAR}, nodes={
-      {n=G.UIT.R, config={align = 'cm',padding = 0.1, minh = 0.8}, nodes={
-          ((_profile == G.SETTINGS.profile) or not profile_data) and {n=G.UIT.R, config={align = "cm"}, nodes={
-          create_text_input({
-            w = 4, max_length = 16, prompt_text = localize('k_enter_name'),
-            ref_table = G.PROFILES[_profile], ref_value = 'name',extended_corpus = true, keyboard_offset = 1,
-            callback = function() 
-              G:save_settings()
-              G.FILE_HANDLER.force = true
-            end
-          }),
-        }} or {n=G.UIT.R, config={align = 'cm',padding = 0.1, minw = 4, r = 0.1, colour = G.C.BLACK, minh = 0.6}, nodes={
-          {n=G.UIT.T, config={text = G.PROFILES[_profile].name, scale = 0.45, colour = G.C.WHITE}},
-        }},
-      }},
-      {n=G.UIT.R, config={align = "cm", padding = 0.1}, nodes={
+    local t = {
+      n=G.UIT.ROOT, 
+      config={
+        align = 'cm', 
+        colour = G.C.RED -- was clear
+      }, 
+      nodes={
+        funny_fix,
+        {
+          n=G.UIT.R, 
+          config={
+            align = 'cm',
+            padding = 0.1, 
+            minh = 0.8,
+            colour=G.C.BLACK -- was mpthing
+          }, 
+          nodes={
+            (
+              -- Prompt to enter or change name 
+              (_profile == G.SETTINGS.profile) or not profile_data) and {
+                n=G.UIT.R, 
+                config={
+                  align = "cm",
+                  colour=G.C.GREEN -- was mpthing
+                }, 
+                nodes={
+                  create_text_input({
+                    w = 4,
+                    config={
+                      align='cm',
+                      colour=G.C.RED -- was mpthing
+                    },
+                    colour=G.C.MONEY, -- was mpthing
+                    align='cm',
+                    max_length = 16, 
+                    prompt_text = localize('k_enter_name'),
+                    ref_table = G.PROFILES[_profile], ref_value = 'name',extended_corpus = true, keyboard_offset = 1,
+                    callback = function() 
+                      G:save_settings()
+                      G.FILE_HANDLER.force = true
+                    end
+                  }),
+                }
+
+              -- Name is fixed
+              } or {
+                n=G.UIT.R, 
+                config={
+                  align = 'cm',
+                  padding = 0.1, 
+                  minw = 4, 
+                  r = 0.1, 
+                  colour = G.C.BLACK, 
+                  minh = 0.6
+                }, 
+                nodes={
+                  {
+                    n=G.UIT.T, 
+                    config={
+                      text = G.PROFILES[_profile].name, 
+                      scale = 0.45, 
+                      colour = G.C.WHITE
+                    }
+                  },
+                }
+              },
+            }
+          },
+          {n=G.UIT.R, 
+          config={
+            align = "cm", 
+            padding = 0.1
+          }, 
+          nodes={
         {n=G.UIT.C, config={align = "cm", minw = 6}, nodes={
           (G.PROFILES[_profile].progress and G.PROFILES[_profile].progress.discovered) and create_progress_box(G.PROFILES[_profile].progress, 0.5) or
           {n=G.UIT.C, config={align = "cm", minh = 4, minw = 5.2, colour = G.C.BLACK, r = 0.1}, nodes={
@@ -384,7 +458,7 @@ function G.UIDEF.profile_option(_profile)
                         hover = true, 
                         colour = G.C.BLUE,
                         func = 'can_load_profile_wrapper', 
-                        button = "this doesn't matter lololololol boy it'll be really embarassing if this text shows up in an error message", 
+                        button = "g",--"this doesn't matter lololololol boy it'll be really embarassing if this text shows up in an error message", 
                         shadow = true, 
                         focus_args = {nav = 'wide'}
                     }, 
@@ -418,6 +492,14 @@ function G.UIDEF.profile_option(_profile)
       {n=G.UIT.R, config={align = "cm", padding = 0}, nodes={
         {n=G.UIT.T, config={id = 'warning_text', text = localize('ph_click_confirm'), scale = 0.4, colour = G.C.CLEAR}}
       }}
-    }} 
+    }}
+
+    local ch_list = G.OVERLAY_MENU:get_UIE_by_ID('waaaaaaaaaaaaa')
+    if ch_list then 
+      -- Delete everything that's already there?
+      if ch_list.config.object then 
+        ch_list.config.object:remove() 
+      end
+    end
     return t
   end
