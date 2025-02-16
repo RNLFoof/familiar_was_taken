@@ -380,7 +380,7 @@ function G.UIDEF.profile_option(_profile)
       n=G.UIT.ROOT, -- was root
       config={
         align = 'cm', 
-        colour = G.C.BLUE, -- was clear
+        colour = G.C.CLEAR, -- was clear
       }, 
       nodes=
       {
@@ -400,7 +400,7 @@ function G.UIDEF.profile_option(_profile)
             align = 'cm',
             padding = 0.1, 
             minh = 0.8,
-            colour=G.C.BLACK, -- was mpthing
+            --colour=G.C.BLACK, -- was mpthing
             tooltip={title = "Sorry", text = {"I have no clue how to fix this", "(you'll see)"}},
           }, 
           nodes={
@@ -410,7 +410,7 @@ function G.UIDEF.profile_option(_profile)
                 n=G.UIT.R, 
                 config={
                   align = "cm",
-                  colour=G.C.GREEN, -- was mpthing
+                  --colour=G.C.GREEN, -- was mpthing
                   tooltip={title = "Sorry", text = {"I have no clue how to fix this", "(you'll see)"}},
                 }, 
                 nodes={
@@ -418,10 +418,10 @@ function G.UIDEF.profile_option(_profile)
                     w = 4,
                     config={
                       align='cm',
-                      colour=G.C.RED, -- was mpthing
+                      --colour=G.C.RED, -- was mpthing
                       tooltip={title = "Sorry", text = {"I have no clue how to fix this", "(you'll see)"}},
                     },
-                    colour=G.C.MONEY, -- was mpthing
+                    --colour=G.C.MONEY, -- was mpthing
                     align='cm',
                     max_length = 16, 
                     prompt_text = localize('k_enter_name'),
@@ -490,7 +490,7 @@ function G.UIDEF.profile_option(_profile)
                         hover = true, 
                         colour = G.C.BLUE,
                         func = 'can_load_profile_wrapper', 
-                        button = "g",--"this doesn't matter lololololol boy it'll be really embarassing if this text shows up in an error message", 
+                        button = "this doesn't matter lololololol boy it'll be really embarassing if this text shows up in an error message", 
                         shadow = true, 
                         focus_args = {nav = 'wide'}
                     }, 
