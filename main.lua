@@ -46,6 +46,9 @@ function G.UIDEF.fwt_profile_list()
     table.insert(profile_pages, localize('k_page')..' '..tostring(i)..'/'..tostring(math.ceil(profile_count/profiles_per_page)))
   end
 
+  initial_page = math.floor(G.SETTINGS.profile / profiles_per_page) + 1
+  G.focused_profile = G.SETTINGS.profile
+
   -- Not sure what this does
   -- Maybe it's what opens the box in the first place?
   G.E_MANAGER:add_event(
@@ -53,7 +56,7 @@ function G.UIDEF.fwt_profile_list()
       func = (function()
         G.FUNCS.fwt_change_profile_list_page{
           cycle_config = {
-            current_option = 1   -- TODO or maybe this is how you change the initial page at first?
+            current_option = initial_page
           }
         }
         return true
@@ -109,7 +112,7 @@ function G.UIDEF.fwt_profile_list()
                   options = profile_pages, 
                   cycle_shoulders = true,
                   opt_callback = 'fwt_change_profile_list_page',
-                  current_option = 1,  -- TODO hey I bet this is how you change the initial page at first
+                  current_option = initial_page,
                   colour = G.C.RED, 
                   no_pips = true, 
                   focus_args = {
@@ -228,7 +231,7 @@ function G.UIDEF.fwt_profile_list_page(_page)
 
             -- vert is what makes it go on the left!!!! took me a while to get that
             -- ssee engline/ui.lua line 840 in the balatro source code
-            chosen= G.focused_profile==k and 'vert' or false,
+            chosen=G.focused_profile==k and 'vert' or false,
           }),
 
           -- Held the little radio buttons that show if a challenge is done.
@@ -239,14 +242,9 @@ function G.UIDEF.fwt_profile_list_page(_page)
         --   -- }},
         -- }},
       }}      
-      print(fwt_profile_list[#fwt_profile_list].nodes[2].nodes[1].config)
-      for key,_ in pairs(fwt_profile_list[#fwt_profile_list].nodes[2].nodes[1].config         ) do
-        --print(key)
-      end
       snapped = true
     end
   end
-
   return {n=G.UIT.ROOT, config={align = "cm", padding = 0.1, colour = G.C.BLUE}, nodes=fwt_profile_list}
 end
 
@@ -261,7 +259,7 @@ G.FUNCS.fwt_change_profile_list_page = function(args)
   roll_focused_profile_with_page(args.to_key)
   if not args or not args.cycle_config then return end
   if G.OVERLAY_MENU then
-    -- This is the list of dudes ghenerated in fwt_profile_list_page
+    -- This is the list of dudes generated in fwt_profile_list_page
     local ch_list = G.OVERLAY_MENU:get_UIE_by_ID('fwt_profile_list')
     if ch_list then 
       -- Delete everything that's already there?
@@ -281,9 +279,17 @@ end
 
 -- Seems e.config.id tells it what to change to?
 G.FUNCS.fwt_change_profile_description = function(e)
-  print(e)
   if G.OVERLAY_MENU then
     
+    -- The profile you're playing with is selected when the box is loaded
+    -- The challenge menu didn't load anything at first
+    -- So it needs help :)
+    -- This removes the arrow when you click off of it 
+    local initial_button = G.OVERLAY_MENU:get_UIE_by_ID(G.SETTINGS.profile)
+    --print(e.config.chosen)
+    if initial_button and e.last_moved ~= nil then  -- e has like a million more values on the first manual selection. it's jank but I'm just checking for one of them
+      initial_button.config.chosen = nil
+    end
     -- fwt_profile_list seems to be a 
     local desc_area = G.OVERLAY_MENU:get_UIE_by_ID('fwt_profile_area')
     if desc_area and desc_area.config.oid ~= e.config.id then
@@ -309,12 +315,14 @@ end
 -- The function called by the button that opens the box :)
 function G.FUNCS.profile_select(e)
   G.SETTINGS.paused = true
+  G.focused_profile = G.SETTINGS.PROFILE
+
   G.FUNCS.overlay_menu{
     definition = G.UIDEF.fwt_profile_list(),
   }
 end
   
-  function G.UIDEF.profile_option(_profile)
+function G.UIDEF.profile_option(_profile)
     -- New
     if not G.PROFILES[_profile] then
         G.PROFILES[_profile] = {}
