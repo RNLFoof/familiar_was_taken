@@ -179,9 +179,12 @@ function G.UIDEF.fwt_profile_list_page(_page)
     if k > profiles_per_page*(_page or 0) and k <= profiles_per_page*((_page or 0) + 1) then
 
       -- Make sure all profiles are initialized (should probably be moved elsewhere?) TODO
-      if love.filesystem.getInfo(k..'/'..'profile.jkr') then G:load_profile(k) end
       if not G.PROFILES[k] then
-        G.PROFILES[k] = {}
+        if love.filesystem.getInfo(k..'/'..'profile.jkr') then -- prefers the one in memory bc otherwise it overwrites itself with the old value right after you change the name 
+          G:load_profile(k) 
+        else
+          G.PROFILES[k] = {}
+        end
       end
       if not G.PROFILES[k].name then
         G.PROFILES[k].name = 'P'..k
@@ -221,7 +224,7 @@ function G.UIDEF.fwt_profile_list_page(_page)
             id = k,
             col = true, 
             label = {
-              profile_being_rendered.name and G.focused_profile..' '..G.SETTINGS.profile..' '..k..' '..profile_being_rendered.name
+              profile_being_rendered.name and G.TIMERS.REAL..' '..G.focused_profile..' '..G.SETTINGS.profile..' '..k..' '..profile_being_rendered.name
               or profile_being_rendered.name
             },
             button = 'fwt_change_profile_description', -- TODO eyes
@@ -424,8 +427,20 @@ function G.UIDEF.profile_option(_profile)
                     prompt_text = localize('k_enter_name'),
                     ref_table = G.PROFILES[_profile], ref_value = 'name',extended_corpus = true, keyboard_offset = 1,
                     callback = function() 
+                      local button_holder = G.OVERLAY_MENU:get_UIE_by_ID(_profile)
+                      print(button_holder)
+                      -- print(G.PROFILES[_profile].name)
+                      compress_and_save(selected_profile_filename, {G.focused_profile})
                       G:save_settings()
                       G.FILE_HANDLER.force = true
+                      current_page = math.floor(_profile / profiles_per_page) + 1
+                      G.UIDEF.fwt_profile_list_page(current_page)
+                      G.FUNCS.fwt_change_profile_list_page({
+                        to_key = current_page,
+                        cycle_config = {
+                          current_option = current_page
+                        },
+                      })
                     end
                   }),
                 }
