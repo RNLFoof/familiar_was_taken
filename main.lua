@@ -349,6 +349,7 @@ function G.UIDEF.profile_option(_profile)
         t.config.padding=0
         -- t.config.w=0 These two make it not count...
         -- t.config.h=0
+        t.config.w=0.0001
         t.config.scale=0
         t.config.text_scale=0
         -- t.config.colour=copy_table(G.C.CLEAR)
@@ -360,7 +361,7 @@ function G.UIDEF.profile_option(_profile)
         end
       end
     end
-    --shrink(funny_fix)
+    shrink(funny_fix)
 
     -- Original
 
@@ -383,7 +384,16 @@ function G.UIDEF.profile_option(_profile)
       }, 
       nodes=
       {
-        funny_fix, -- new
+        {
+          n=G.UIT.C,
+          config={
+            w=0,
+            h=0,
+          },
+          nodes={
+            funny_fix, -- new
+          }
+        },
         {
           n=G.UIT.R, 
           config={
