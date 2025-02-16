@@ -167,6 +167,7 @@ function G.UIDEF.fwt_profile_list_page(_page)
   
   -- Snapped is set to false on the first iteration, and true on every other.
   -- It can be true at first if the below check passes. idk what for
+  -- turing it on for everything then off for everything didn't help
   local snapped = false 
   local fwt_profile_list = {}
   for k=1,profile_count do
@@ -224,9 +225,10 @@ function G.UIDEF.fwt_profile_list_page(_page)
             minw = 4,
             scale = 0.4,
             minh = 0.6,
-            focus_args = {
-              snap_to = not snapped
-            }
+
+            -- vert is what makes it go on the left!!!! took me a while to get that
+            -- ssee engline/ui.lua line 840 in the balatro source code
+            chosen= G.focused_profile==k and 'vert' or false,
           }),
 
           -- Held the little radio buttons that show if a challenge is done.
@@ -237,6 +239,10 @@ function G.UIDEF.fwt_profile_list_page(_page)
         --   -- }},
         -- }},
       }}      
+      print(fwt_profile_list[#fwt_profile_list].nodes[2].nodes[1].config)
+      for key,_ in pairs(fwt_profile_list[#fwt_profile_list].nodes[2].nodes[1].config         ) do
+        --print(key)
+      end
       snapped = true
     end
   end
@@ -255,15 +261,19 @@ G.FUNCS.fwt_change_profile_list_page = function(args)
   roll_focused_profile_with_page(args.to_key)
   if not args or not args.cycle_config then return end
   if G.OVERLAY_MENU then
+    -- This is the list of dudes ghenerated in fwt_profile_list_page
     local ch_list = G.OVERLAY_MENU:get_UIE_by_ID('fwt_profile_list')
     if ch_list then 
+      -- Delete everything that's already there?
       if ch_list.config.object then 
         ch_list.config.object:remove() 
       end
+      -- Oka, it like, replaces it with the same? Might even be the same actual code
       ch_list.config.object = UIBox{
         definition =  G.UIDEF.fwt_profile_list_page(args.cycle_config.current_option-1),
         config = {offset = {x=0,y=0}, align = 'cm', parent = ch_list, colour=G.C.BLACK}
       }
+      -- Update the description, too
       G.FUNCS.fwt_change_profile_description{config = {id = G.focused_profile, colour=G.C.BLACK}}
     end
   end
@@ -271,6 +281,7 @@ end
 
 -- Seems e.config.id tells it what to change to?
 G.FUNCS.fwt_change_profile_description = function(e)
+  print(e)
   if G.OVERLAY_MENU then
     
     -- fwt_profile_list seems to be a 
@@ -295,43 +306,13 @@ G.FUNCS.fwt_change_profile_description = function(e)
   end
 end
 
-
+-- The function called by the button that opens the box :)
 function G.FUNCS.profile_select(e)
   G.SETTINGS.paused = true
   G.FUNCS.overlay_menu{
-    definition = G.UIDEF.fwt_profile_list((false)),
+    definition = G.UIDEF.fwt_profile_list(),
   }
 end
-
-function G.FUNCS.original_profile_behavior()
-
-    G.focused_profile = G.focused_profile or G.SETTINGS.profile or 1
-    
-    local tabs = {}
-    for i=1,profile_count do
-        if love.filesystem.getInfo(i..'/'..'profile.jkr') then G:load_profile(i) end
-        tabs[i] = {
-            label = G.PROFILES[i].name and G.PROFILES[i].name or i,
-            chosen = G.focused_profile == i,
-            tab_definition_function = G.UIDEF.profile_option,
-            tab_definition_function_args = i,
-        }
-    end
-    G:load_profile(G.focused_profile)
-
-    local t = create_UIBox_generic_options({padding = 0,contents ={
-        {n=G.UIT.R, config={align = "cm", padding = 0, draw_layer = 1, minw = 4}, nodes={
-          create_tabs(
-          {
-            tabs = tabs,
-            scale=0.5,
-            text_scale=0.25,
-            snap_to_nav = true
-          }),
-        }},
-    }})
-    return t
-  end
   
   function G.UIDEF.profile_option(_profile)
     -- New
