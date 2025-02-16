@@ -102,7 +102,6 @@ function G.UIDEF.fwt_profile_list()
         config={
           align = "cm", 
           padding = 0.0, 
-          -- colour=G.C.MONEY
         }, 
         nodes={
           {
@@ -129,7 +128,6 @@ function G.UIDEF.fwt_profile_list()
             config={
               align = "cm", 
               padding = 0.1, 
-              -- colour=G.C.RED
             }, 
             nodes={
               -- The <- Page 1/2 -> guy
@@ -165,7 +163,6 @@ function G.UIDEF.fwt_profile_list()
             config={
               id = 'fwt_profile_area', 
               object = Moveable(),
-              -- colour=G.C.DARK_EDITION
             }
           },
         }
@@ -244,7 +241,6 @@ function G.UIDEF.fwt_profile_list_page(_page)
               or profile_being_rendered.name
             },
             button = 'fwt_change_profile_description', -- TODO eyes
-            -- colour = G.C.RED,
             minw = 4,
             scale = 0.4,
             minh = 0.6,
@@ -256,16 +252,17 @@ function G.UIDEF.fwt_profile_list_page(_page)
 
           -- Held the little radio buttons that show if a challenge is done.
           -- But they'll be nice if I want extra information later, maybe?
-        -- {n=G.UIT.C, config={align = 'cm', padding = 0.05, minw = 0.6}, nodes = {
-        --   -- {n=G.UIT.C, config={minh = 0.4, minw = 0.4, emboss = 0.05, r = 0.1, colour = G.C.BLUE}, nodes = {
-        --   --   -- challenge_completed and {n=G.UIT.O, config={object = Sprite(0,0,0.4,0.4, G.ASSET_ATLAS["icons"], {x=1, y=0})}} or nil
-        --   -- }},
-        -- }},
+          -- I put it back tho because it's needed for alignment turns out
+        {n=G.UIT.C, config={align = 'cm', padding = 0.05, minw = 0.6}, nodes = {
+          -- {n=G.UIT.C, config={minh = 0.4, minw = 0.4, emboss = 0.05, r = 0.1, colour = G.C.BLUE}, nodes = {
+          --   -- challenge_completed and {n=G.UIT.O, config={object = Sprite(0,0,0.4,0.4, G.ASSET_ATLAS["icons"], {x=1, y=0})}} or nil
+          -- }},
+        }},
       }}      
       snapped = true
     end
   end
-  return {n=G.UIT.ROOT, config={align = "cm", padding = 0.1}, nodes=fwt_profile_list}
+  return {n=G.UIT.ROOT, config={align = "cm", padding = 0.1, colour=G.C.CLEAR}, nodes=fwt_profile_list}
 end
 
 -- Seems to be called when the box is opened and when the page is changed?
@@ -371,8 +368,6 @@ function G.UIDEF.profile_option(_profile)
         t.config.w=0.0001
         t.config.scale=0
         t.config.text_scale=0
-        -- t.config.colour=copy_table(G.C.CLEAR)
-        -- t.config.hooked_colour=copy_table(G.C.CLEAR)
       end
       if t.nodes then
         for _, value in pairs(t.nodes) do
@@ -396,10 +391,10 @@ function G.UIDEF.profile_option(_profile)
     local lwidth, rwidth, scale = 1, 1, 1
     G.CHECK_PROFILE_DATA = nil
     local t = {
-      n=G.UIT.ROOT, -- was root
+      n=G.UIT.ROOT,
       config={
         align = 'cm', 
-        colour = G.C.CLEAR, -- was clear
+        colour = G.C.CLEAR,
       }, 
       nodes=
       {
@@ -419,7 +414,6 @@ function G.UIDEF.profile_option(_profile)
             align = 'cm',
             padding = 0.1, 
             minh = 0.8,
-            --colour=G.C.BLACK, -- was mpthing
           }, 
           nodes={
             (
@@ -435,9 +429,7 @@ function G.UIDEF.profile_option(_profile)
                     w = 4,
                     config={
                       align='cm',
-                      --colour=G.C.RED, -- was mpthing
                     },
-                    --colour=G.C.MONEY, -- was mpthing
                     align='cm',
                     max_length = 16, 
                     prompt_text = localize('k_enter_name'),
