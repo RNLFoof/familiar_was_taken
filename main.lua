@@ -401,7 +401,6 @@ function G.UIDEF.profile_option(_profile)
             padding = 0.1, 
             minh = 0.8,
             --colour=G.C.BLACK, -- was mpthing
-            tooltip={title = "Sorry", text = {"I have no clue how to fix this", "(you'll see)"}},
           }, 
           nodes={
             (
@@ -411,7 +410,6 @@ function G.UIDEF.profile_option(_profile)
                 config={
                   align = "cm",
                   --colour=G.C.GREEN, -- was mpthing
-                  tooltip={title = "Sorry", text = {"I have no clue how to fix this", "(you'll see)"}},
                 }, 
                 nodes={
                   create_text_input({
@@ -419,7 +417,6 @@ function G.UIDEF.profile_option(_profile)
                     config={
                       align='cm',
                       --colour=G.C.RED, -- was mpthing
-                      tooltip={title = "Sorry", text = {"I have no clue how to fix this", "(you'll see)"}},
                     },
                     --colour=G.C.MONEY, -- was mpthing
                     align='cm',
