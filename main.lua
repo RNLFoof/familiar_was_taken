@@ -335,7 +335,7 @@ function G.UIDEF.profile_option(_profile)
     -- and if you put a second input *before* it, the *original* works
     -- I am not paid
     funny_fix = create_text_input({
-      id = 'another_name',
+      id='another_name', -- if its not given an id, they both default to the same thing, so funny fix activates when you click the other one
       w = 0,
       padding=0,
       h=0,
@@ -375,37 +375,7 @@ function G.UIDEF.profile_option(_profile)
   
     local lwidth, rwidth, scale = 1, 1, 1
     G.CHECK_PROFILE_DATA = nil
-
-    texty = create_text_input({
-      w = 4,
-      config={
-        align='cm',
-        colour=G.C.RED, -- was mpthing
-        tooltip={title = "Sorry", text = {"I have no clue how to fix this", "(you'll see)"}},
-      },
-      colour=G.C.MONEY, -- was mpthing
-      align='cm',
-      max_length = 16, 
-      prompt_text = localize('k_enter_name'),
-      ref_table = G.PROFILES[_profile], ref_value = 'name',extended_corpus = true, keyboard_offset = 1,
-      callback = function() 
-        understand_texty()
-        understand_it_all()
-        G:save_settings()
-        G.FILE_HANDLER.force = true
-      end
-    })
-    texty.nodes[1].config.align="cm"
-
-    function understand_texty()
-      print("WHOLE:")
-      print(texty)
-      print("CONFIG:")
-      print(texty.nodes[1].config)
-    end
-    understand_texty()
-
-    it_all = {
+    local t = {
       n=G.UIT.ROOT, -- was root
       config={
         align = 'cm', 
@@ -413,6 +383,7 @@ function G.UIDEF.profile_option(_profile)
       }, 
       nodes=
       {
+        funny_fix, -- new
         {
           n=G.UIT.R, 
           config={
@@ -420,7 +391,7 @@ function G.UIDEF.profile_option(_profile)
             padding = 0.1, 
             minh = 0.8,
             colour=G.C.BLACK, -- was mpthing
-            --tooltip={title = "Sorry", text = {"I have no clue how to fix this", "(you'll see)"}},
+            tooltip={title = "Sorry", text = {"I have no clue how to fix this", "(you'll see)"}},
           }, 
           nodes={
             (
@@ -430,11 +401,26 @@ function G.UIDEF.profile_option(_profile)
                 config={
                   align = "cm",
                   colour=G.C.GREEN, -- was mpthing
-                  --tooltip={title = "Sorry", text = {"I have no clue how to fix this", "(you'll see)"}},
+                  tooltip={title = "Sorry", text = {"I have no clue how to fix this", "(you'll see)"}},
                 }, 
                 nodes={
-                  funny_fix,
-                  texty,
+                  create_text_input({
+                    w = 4,
+                    config={
+                      align='cm',
+                      colour=G.C.RED, -- was mpthing
+                      tooltip={title = "Sorry", text = {"I have no clue how to fix this", "(you'll see)"}},
+                    },
+                    colour=G.C.MONEY, -- was mpthing
+                    align='cm',
+                    max_length = 16, 
+                    prompt_text = localize('k_enter_name'),
+                    ref_table = G.PROFILES[_profile], ref_value = 'name',extended_corpus = true, keyboard_offset = 1,
+                    callback = function() 
+                      G:save_settings()
+                      G.FILE_HANDLER.force = true
+                    end
+                  }),
                 }
 
               -- Name is fixed
@@ -537,20 +523,5 @@ function G.UIDEF.profile_option(_profile)
     --     ch_list.config.object:remove() 
     --   end
     -- end
-
-    function understand_it_all()
-      print("IT ALL:")
-      print(it_all)
-      print("NODE 1 CONFIG:")
-      print(it_all.nodes[1].config)
-      print("NODE 2 CONFIG:")
-      print(it_all.nodes[2].config)
-      print("NODE 3 CONFIG:")
-      print(it_all.nodes[3].config)
-      print(string.rep("\n", 99))
-
-    end
-    understand_it_all()
-
-    return it_all
+    return t
   end
