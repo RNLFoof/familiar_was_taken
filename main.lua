@@ -135,7 +135,8 @@ function G.UIDEF.fwt_profile_list()
             n=G.UIT.O, 
             config={
               id = 'fwt_profile_area', 
-              object = Moveable()
+              object = Moveable(),
+              colour=G.C.DARK_EDITION
             }
           },
         }
@@ -338,11 +339,27 @@ function G.UIDEF.profile_option(_profile)
       padding=0,
       h=0,
       prompt_text = '',
+      colour=copy_table(G.C.CLEAR),
+      hooked_colour=copy_table(G.C.CLEAR),
       ref_table = {uh=''}, ref_value = 'uh',
     })
-    funny_fix.config.scale=0
-    funny_fix.nodes[1].config.padding=0
-    funny_fix.nodes[1].nodes[1].config.padding=0
+    function shrink(t)
+      if t.config then
+        t.config.padding=0
+        -- t.config.w=0 These two make it not count...
+        -- t.config.h=0
+        t.config.scale=0
+        t.config.text_scale=0
+        -- t.config.colour=copy_table(G.C.CLEAR)
+        -- t.config.hooked_colour=copy_table(G.C.CLEAR)
+      end
+      if t.nodes then
+        for _, value in pairs(t.nodes) do
+          shrink(value)
+        end
+      end
+    end
+    --shrink(funny_fix)
 
     -- Original
 
@@ -358,20 +375,22 @@ function G.UIDEF.profile_option(_profile)
     local lwidth, rwidth, scale = 1, 1, 1
     G.CHECK_PROFILE_DATA = nil
     local t = {
-      n=G.UIT.ROOT, 
+      n=G.UIT.ROOT, -- was root
       config={
         align = 'cm', 
-        colour = G.C.RED -- was clear
+        colour = G.C.BLUE, -- was clear
       }, 
-      nodes={
-        funny_fix,
+      nodes=
+      {
+        funny_fix, -- new
         {
           n=G.UIT.R, 
           config={
             align = 'cm',
             padding = 0.1, 
             minh = 0.8,
-            colour=G.C.BLACK -- was mpthing
+            colour=G.C.BLACK, -- was mpthing
+            tooltip={title = "Sorry", text = {"I have no clue how to fix this", "(you'll see)"}},
           }, 
           nodes={
             (
@@ -380,14 +399,16 @@ function G.UIDEF.profile_option(_profile)
                 n=G.UIT.R, 
                 config={
                   align = "cm",
-                  colour=G.C.GREEN -- was mpthing
+                  colour=G.C.GREEN, -- was mpthing
+                  tooltip={title = "Sorry", text = {"I have no clue how to fix this", "(you'll see)"}},
                 }, 
                 nodes={
                   create_text_input({
                     w = 4,
                     config={
                       align='cm',
-                      colour=G.C.RED -- was mpthing
+                      colour=G.C.RED, -- was mpthing
+                      tooltip={title = "Sorry", text = {"I have no clue how to fix this", "(you'll see)"}},
                     },
                     colour=G.C.MONEY, -- was mpthing
                     align='cm',
@@ -494,12 +515,12 @@ function G.UIDEF.profile_option(_profile)
       }}
     }}
 
-    local ch_list = G.OVERLAY_MENU:get_UIE_by_ID('waaaaaaaaaaaaa')
-    if ch_list then 
-      -- Delete everything that's already there?
-      if ch_list.config.object then 
-        ch_list.config.object:remove() 
-      end
-    end
+    -- local ch_list = G.OVERLAY_MENU:get_UIE_by_ID('waaaaaaaaaaaaa')
+    -- if ch_list then 
+    --   -- Delete everything that's already there?
+    --   if ch_list.config.object then 
+    --     ch_list.config.object:remove() 
+    --   end
+    -- end
     return t
   end
