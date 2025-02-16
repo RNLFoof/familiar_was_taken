@@ -2,7 +2,35 @@ local profile_count = 8
 local profiles_per_page = 4
 local selected_profile_filename = "fwt_selected_profile.jkr"
 
--- TODO: changing the name should update it in the sidebar
+function ensure_or_set_current_page(optional_page)
+  if optional_page ~= nil then
+    G.fwt_current_page = optional_page
+  end
+  if G.fwt_current_page == nil then
+    G.fwt_current_page = math.floor(G.SETTINGS.profile / profiles_per_page) + 1
+  end
+end
+
+function make_sure_profiles_on_page_are_loaded()
+  -- Might be worth unloading everything except the selected one first? you know, less shit in memory
+  ensure_or_set_current_page()
+  print(G.fwt_current_page)
+  for k=1,profile_count do
+    -- If this profile is actuallyy on the page...
+    if k > profiles_per_page*(G.fwt_current_page or 0) and k <= profiles_per_page*((G.fwt_current_page or 0) + 1) then
+      if not G.PROFILES[k] then
+        if love.filesystem.getInfo(k..'/'..'profile.jkr') then -- prefers the one in memory bc otherwise it overwrites itself with the old value right after you change the name 
+          G:load_profile(k) 
+        else
+          G.PROFILES[k] = {}
+        end
+      end
+      if not G.PROFILES[k].name then
+        G.PROFILES[k].name = 'P'..k
+      end
+    end
+  end
+end
 
 function G.FUNCS.deliberately_load_profile_wrapper(delete_prof_data)
     compress_and_save(selected_profile_filename, {G.focused_profile})
@@ -73,7 +101,7 @@ function G.UIDEF.fwt_profile_list()
         config={
           align = "cm", 
           padding = 0.0, 
-          colour=G.C.MONEY
+          -- colour=G.C.MONEY
         }, 
         nodes={
           {
@@ -100,7 +128,7 @@ function G.UIDEF.fwt_profile_list()
             config={
               align = "cm", 
               padding = 0.1, 
-              colour=G.C.RED
+              -- colour=G.C.RED
             }, 
             nodes={
               -- The <- Page 1/2 -> guy
@@ -136,7 +164,7 @@ function G.UIDEF.fwt_profile_list()
             config={
               id = 'fwt_profile_area', 
               object = Moveable(),
-              colour=G.C.DARK_EDITION
+              -- colour=G.C.DARK_EDITION
             }
           },
         }
@@ -146,20 +174,18 @@ function G.UIDEF.fwt_profile_list()
   return t
 end
 
-function roll_focused_profile_with_page(page) 
-  -- Boy! I sure hope this makes sense
-  if not page then
-    page = 1
-  end
+function roll_focused_profile_with_page() 
+  -- okay wtf is going on if its not set. its set at the top of the file 
+  -- if not G.fwt_current_page then
+  --   page = 1
+  -- end
+  ensure_or_set_current_page()
 
   if not G.focused_profile or G.focused_profile == 'nil' or G.focused_profile == nil then
-    G.focused_profile = 1 -- TODO this should instead pick the current profile!! but it might not be on this page!! sooooooo
-    if G.focused_profile == 'nil' or G.focused_profile == nil then
-      print("Hey if you're reading this please ask Dust to fix it so that she can say \"yeah I'll do it later\" and then never do it")
-    end
+    G.focused_profile = G.SETTINGS.profile
   else
     -- Adding profiles_per_page because it seems to be able to be negative?
-    G.focused_profile = math.fmod(G.focused_profile -1, profiles_per_page) + (page) * profiles_per_page + 1
+    G.focused_profile = math.fmod(G.focused_profile -1, profiles_per_page) + (G.fwt_current_page) * profiles_per_page + 1
   end
 end
 
@@ -167,29 +193,18 @@ end
 -- Said container is in its own container in create_UIBox_generic_options
 function G.UIDEF.fwt_profile_list_page(_page)
   -- G.focused_profile = G.focused_profile or G.SETTINGS.profile or 1
-  roll_focused_profile_with_page(_page)
+  ensure_or_set_current_page(_page)
+  roll_focused_profile_with_page()
   
   -- Snapped is set to false on the first iteration, and true on every other.
   -- It can be true at first if the below check passes. idk what for
   -- turing it on for everything then off for everything didn't help
   local snapped = false 
   local fwt_profile_list = {}
+  make_sure_profiles_on_page_are_loaded()
   for k=1,profile_count do
     -- If this profile is actuallyy on the page...
-    if k > profiles_per_page*(_page or 0) and k <= profiles_per_page*((_page or 0) + 1) then
-
-      -- Make sure all profiles are initialized (should probably be moved elsewhere?) TODO
-      if not G.PROFILES[k] then
-        if love.filesystem.getInfo(k..'/'..'profile.jkr') then -- prefers the one in memory bc otherwise it overwrites itself with the old value right after you change the name 
-          G:load_profile(k) 
-        else
-          G.PROFILES[k] = {}
-        end
-      end
-      if not G.PROFILES[k].name then
-        G.PROFILES[k].name = 'P'..k
-      end
-    
+    if k > profiles_per_page*(_page or 0) and k <= profiles_per_page*((_page or 0) + 1) then    
       profile_being_rendered = G.PROFILES[k]
       if G.CONTROLLER.focused.target and G.CONTROLLER.focused.target.config.id == 'fwt_profile_page' then
         snapped = true
@@ -224,11 +239,11 @@ function G.UIDEF.fwt_profile_list_page(_page)
             id = k,
             col = true, 
             label = {
-              profile_being_rendered.name and G.TIMERS.REAL..' '..G.focused_profile..' '..G.SETTINGS.profile..' '..k..' '..profile_being_rendered.name
+              profile_being_rendered.name and profile_being_rendered.name
               or profile_being_rendered.name
             },
             button = 'fwt_change_profile_description', -- TODO eyes
-            colour = G.C.RED,
+            -- colour = G.C.RED,
             minw = 4,
             scale = 0.4,
             minh = 0.6,
@@ -249,7 +264,7 @@ function G.UIDEF.fwt_profile_list_page(_page)
       snapped = true
     end
   end
-  return {n=G.UIT.ROOT, config={align = "cm", padding = 0.1, colour = G.C.BLUE}, nodes=fwt_profile_list}
+  return {n=G.UIT.ROOT, config={align = "cm", padding = 0.1}, nodes=fwt_profile_list}
 end
 
 -- Seems to be called when the box is opened and when the page is changed?
@@ -260,7 +275,9 @@ G.FUNCS.fwt_change_profile_list_page = function(args)
   --     from_key = from_key,
   --     to_key = to_key,
   --     cycle_config = e.config.ref_table
-  roll_focused_profile_with_page(args.to_key)
+  ensure_or_set_current_page(args.to_key)
+  make_sure_profiles_on_page_are_loaded()
+  roll_focused_profile_with_page()
   if not args or not args.cycle_config then return end
   if G.OVERLAY_MENU then
     -- This is the list of dudes generated in fwt_profile_list_page
@@ -328,9 +345,8 @@ end
   
 function G.UIDEF.profile_option(_profile)
     -- New
-    if not G.PROFILES[_profile] then
-        G.PROFILES[_profile] = {}
-    end
+    make_sure_profiles_on_page_are_loaded()
+    ensure_or_set_current_page()
 
     -- So the text prompt for entering a name was super misaligned, not even in the box
     -- no idea why
@@ -433,12 +449,11 @@ function G.UIDEF.profile_option(_profile)
                       compress_and_save(selected_profile_filename, {G.focused_profile})
                       G:save_settings()
                       G.FILE_HANDLER.force = true
-                      current_page = math.floor(_profile / profiles_per_page) + 1
-                      G.UIDEF.fwt_profile_list_page(current_page)
+                      G.UIDEF.fwt_profile_list_page(G.fwt_current_page)
                       G.FUNCS.fwt_change_profile_list_page({
-                        to_key = current_page,
+                        to_key = G.fwt_current_page,
                         cycle_config = {
-                          current_option = current_page
+                          current_option = G.fwt_current_page
                         },
                       })
                     end
@@ -509,7 +524,7 @@ function G.UIDEF.profile_option(_profile)
                     nodes={{
                         n=G.UIT.T, 
                         config={
-                            text = _profile == G.SETTINGS.profile and localize('b_current_profile').._profile or profile_data and localize('b_load_profile').._profile or localize('b_create_profile').._profile, 
+                            text = _profile == G.SETTINGS.profile and localize('b_current_profile') or profile_data and localize('b_load_profile') or localize('b_create_profile'), 
                             ref_value = 'load_button_text', 
                             scale = 0.5, 
                             colour = G.C.UI.TEXT_LIGHT
