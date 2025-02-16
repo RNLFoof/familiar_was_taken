@@ -18,7 +18,7 @@ function make_sure_profiles_on_page_are_loaded()
   for k=1,profile_count do
     -- If this profile is actuallyy on the page...
     if k > profiles_per_page*(G.fwt_current_page or 0) and k <= profiles_per_page*((G.fwt_current_page or 0) + 1) then
-      if not G.PROFILES[k] then
+      if G.PROFILES[k] then
         if love.filesystem.getInfo(k..'/'..'profile.jkr') then -- prefers the one in memory bc otherwise it overwrites itself with the old value right after you change the name 
           G:load_profile(k) 
         else
@@ -28,6 +28,7 @@ function make_sure_profiles_on_page_are_loaded()
       if not G.PROFILES[k].name then
         G.PROFILES[k].name = 'P'..k
       end
+      print("Made this one real: "..G.PROFILES[k].name)
     end
   end
 end
@@ -307,7 +308,6 @@ G.FUNCS.fwt_change_profile_description = function(e)
     -- So it needs help :)
     -- This removes the arrow when you click off of it 
     local initial_button = G.OVERLAY_MENU:get_UIE_by_ID(G.SETTINGS.profile)
-    --print(e.config.chosen)
     if initial_button and e.last_moved ~= nil then  -- e has like a million more values on the first manual selection. it's jank but I'm just checking for one of them
       initial_button.config.chosen = nil
     end
@@ -444,8 +444,6 @@ function G.UIDEF.profile_option(_profile)
                     ref_table = G.PROFILES[_profile], ref_value = 'name',extended_corpus = true, keyboard_offset = 1,
                     callback = function() 
                       local button_holder = G.OVERLAY_MENU:get_UIE_by_ID(_profile)
-                      print(button_holder)
-                      -- print(G.PROFILES[_profile].name)
                       compress_and_save(selected_profile_filename, {G.focused_profile})
                       G:save_settings()
                       G.FILE_HANDLER.force = true
