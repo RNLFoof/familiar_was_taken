@@ -1,5 +1,5 @@
-local profile_count = 8
-local profiles_per_page = 4
+local profiles_per_page = 10
+local profile_count = 3 * profiles_per_page
 local selected_profile_filename = "fwt_selected_profile.jkr"
 
 function ensure_or_set_current_page(optional_page)
@@ -18,15 +18,19 @@ function make_sure_profiles_on_page_are_loaded()
   for k=1,profile_count do
     -- If this profile is actuallyy on the page...
     if k > profiles_per_page*(G.fwt_current_page or 0) and k <= profiles_per_page*((G.fwt_current_page or 0) + 1) then
+      print("Making this one real: "..k)
       if G.PROFILES[k] then
         if love.filesystem.getInfo(k..'/'..'profile.jkr') then -- prefers the one in memory bc otherwise it overwrites itself with the old value right after you change the name 
-          G:load_profile(k) 
+          G:load_profile(k)
+          print("LOaded from file: "..k)
         else
           G.PROFILES[k] = {}
+          print("Set to default of nothing")
         end
       end
       if not G.PROFILES[k].name then
         G.PROFILES[k].name = 'P'..k
+        print("Set default name")
       end
       print("Made this one real: "..G.PROFILES[k].name)
     end
