@@ -12,68 +12,84 @@ function automatically_load_profile()
   local selected_profile = STR_UNPACK(file_contents)
 
   if selected_profile then
-      Game:load_profile(selected_profile[1])
+    --Game:load_profile seems to be for game start
+    --G.FUNCS.load_profile seems to be for the menus
+    Game:load_profile(selected_profile[1])
   end
 end
 
 function init()
-  for i=1,profile_count do
-      if not G.PROFILES[i] then
-          G.PROFILES[i] = {}
-      end
-  end
-
   automatically_load_profile()
 end
 init()
 
+-- Lets you set the page. If left blank, figures it out from what profile is focused.
+-- Rolls the selected profile if needed.
 function ensure_or_set_current_page(optional_page)
+  -- Profile part 
+  if not G.focused_profile or G.focused_profile == 'nil' or G.focused_profile == nil then
+    G.focused_profile = G.SETTINGS.profile
+  end
+
   if optional_page ~= nil then
     G.fwt_current_page = optional_page
   end
   if G.fwt_current_page == nil then
     G.fwt_current_page = math.floor(G.SETTINGS.profile / profiles_per_page) + 1
   end
+
+  -- Adding profiles_per_page because it seems to be able to be negative?
+  G.focused_profile =  ((G.focused_profile-1) % profiles_per_page) + ((G.fwt_current_page-1) * profiles_per_page) + 1
+  G.fwt_lower_page_bound = ((G.fwt_current_page-1) * profiles_per_page) + 1
+  G.fwt_upper_page_bound = ((G.fwt_current_page) * profiles_per_page)
+
+  local this_will_be_in_the_error________________________________ = {
+    fwt_current_page = G.fwt_current_page,
+    focused_profile = G.focused_profile,
+    lower_bound = G.fwt_lower_page_bound,
+    upper_bound = G.fwt_upper_page_bound,
+  }
+  assert(G.fwt_current_page > 0)
+  assert(G.fwt_current_page <= profile_count / profiles_per_page)
+  assert(G.focused_profile > 0)
+  assert(G.focused_profile > (G.fwt_current_page-1) * profiles_per_page)
+  assert(G.focused_profile <= (G.fwt_current_page) * profiles_per_page)
+  assert(G.focused_profile <= profile_count)
+  assert((G.fwt_lower_page_bound - 1) % profiles_per_page == 0)
+  assert(G.fwt_upper_page_bound % profiles_per_page == 0)
+  assert(profile_key_in_page_bounds(G.focused_profile))
+
+  _make_sure_profiles_on_page_are_loaded()
 end
 
-function make_sure_profiles_on_page_are_loaded()
+function profile_key_in_page_bounds(key)
+  return key >= G.fwt_lower_page_bound and key <= G.fwt_upper_page_bound 
+end
+
+function _make_sure_profiles_on_page_are_loaded()
+
   -- Might be worth unloading everything except the selected one first? you know, less shit in memory
-  ensure_or_set_current_page()
-  print(G.fwt_current_page)
+  --print(G.fwt_current_page)
   for k=1,profile_count do
     -- If this profile is actuallyy on the page...
-    if k > profiles_per_page*(G.fwt_current_page or 0) and k <= profiles_per_page*((G.fwt_current_page or 0) + 1) then
-      print("Making this one real: "..k)
-      if G.PROFILES[k] then
+    if profile_key_in_page_bounds(k) then
+      --print("Making this one real: "..k)
+      if not G.PROFILES[k] then
         if love.filesystem.getInfo(k..'/'..'profile.jkr') then -- prefers the one in memory bc otherwise it overwrites itself with the old value right after you change the name 
-          G:load_profile(k)
-          print("LOaded from file: "..k)
+          local file_contents = get_compressed(k..'/'..'profile.jkr')
+          G.PROFILES[k] = STR_UNPACK(file_contents)
+          --print("LOaded from file: "..k)
         else
           G.PROFILES[k] = {}
-          print("Set to default of nothing")
+          --print("Set to default of nothing")
         end
       end
       if not G.PROFILES[k].name then
         G.PROFILES[k].name = 'P'..k
-        print("Set default name")
+        --print("Set default name")
       end
-      print("Made this one real: "..G.PROFILES[k].name)
+      --print("Made this one real: "..G.PROFILES[k].name)
     end
-  end
-end
-
-function roll_focused_profile_with_page() 
-  -- okay wtf is going on if its not set. its set at the top of the file 
-  -- if not G.fwt_current_page then
-  --   page = 1
-  -- end
-  ensure_or_set_current_page()
-
-  if not G.focused_profile or G.focused_profile == 'nil' or G.focused_profile == nil then
-    G.focused_profile = G.SETTINGS.profile
-  else
-    -- Adding profiles_per_page because it seems to be able to be negative?
-    G.focused_profile = math.fmod(G.focused_profile -1, profiles_per_page) + (G.fwt_current_page) * profiles_per_page + 1
   end
 end
 
@@ -100,8 +116,6 @@ G.FUNCS.fwt_change_profile_list_page = function(args)
   --     to_key = to_key,
   --     cycle_config = e.config.ref_table
   ensure_or_set_current_page(args.to_key)
-  make_sure_profiles_on_page_are_loaded()
-  roll_focused_profile_with_page()
   if not args or not args.cycle_config then return end
   if G.OVERLAY_MENU then
     -- This is the list of dudes generated in fwt_profile_list_page
@@ -113,10 +127,11 @@ G.FUNCS.fwt_change_profile_list_page = function(args)
       end
       -- Oka, it like, replaces it with the same? Might even be the same actual code
       ch_list.config.object = UIBox{
-        definition =  G.UIDEF.fwt_profile_list_page(args.cycle_config.current_option-1),
+        definition =  G.UIDEF.fwt_profile_list_page(args.cycle_config.current_option),
         config = {offset = {x=0,y=0}, align = 'cm', parent = ch_list, colour=G.C.BLACK}
       }
       -- Update the description, too
+      print("gggggggggggggggggggggggggggggggggggg"..G.focused_profile)
       G.FUNCS.fwt_change_profile_description{config = {id = G.focused_profile, colour=G.C.BLACK}}
     end
   end
@@ -143,6 +158,7 @@ G.FUNCS.fwt_change_profile_description = function(e)
       if desc_area.config.object then 
         desc_area.config.object:remove() 
       end
+      assert(e.config.id > 0)
       desc_area.config.object = UIBox{
         definition =  G.UIDEF.profile_option(e.config.id),
         config = {
@@ -175,15 +191,14 @@ end
 
 --------------- UI DEFINITIONS ---------------
 
--- Seems to be the whole ass popup?
+-- The whole ass popup wooooah
 function G.UIDEF.fwt_profile_list()
   local profile_pages = {}
   for i = 1, math.ceil(profile_count/profiles_per_page) do
     table.insert(profile_pages, localize('k_page')..' '..tostring(i)..'/'..tostring(math.ceil(profile_count/profiles_per_page)))
   end
 
-  initial_page = math.floor(G.SETTINGS.profile / profiles_per_page) + 1
-  G.focused_profile = G.SETTINGS.profile
+  ensure_or_set_current_page()
 
   -- Not sure what this does
   -- Maybe it's what opens the box in the first place?
@@ -192,7 +207,7 @@ function G.UIDEF.fwt_profile_list()
       func = (function()
         G.FUNCS.fwt_change_profile_list_page{
           cycle_config = {
-            current_option = initial_page
+            current_option = G.fwt_current_page--+1 -- idk why the +1 is needed. there's a -1 in the foction that I also don't understand but it was in the source 
           }
         }
         return true
@@ -200,9 +215,8 @@ function G.UIDEF.fwt_profile_list()
     })
   )
 
-  -- Seems to be the whole ass popup?
   local t = create_UIBox_generic_options({
-    back_id = 'fwt_profile_list',
+    --back_id = 'fwt_profile_list', -- why would it need to be this??
     contents = {
       {
         n=G.UIT.C, 
@@ -284,17 +298,15 @@ end
 function G.UIDEF.fwt_profile_list_page(_page)
   -- G.focused_profile = G.focused_profile or G.SETTINGS.profile or 1
   ensure_or_set_current_page(_page)
-  roll_focused_profile_with_page()
   
   -- Snapped is set to false on the first iteration, and true on every other.
   -- It can be true at first if the below check passes. idk what for
   -- turing it on for everything then off for everything didn't help
   local snapped = false 
   local fwt_profile_list = {}
-  make_sure_profiles_on_page_are_loaded()
   for k=1,profile_count do
     -- If this profile is actuallyy on the page...
-    if k > profiles_per_page*(_page or 0) and k <= profiles_per_page*((_page or 0) + 1) then    
+    if profile_key_in_page_bounds(k) then
       profile_being_rendered = G.PROFILES[k]
       if G.CONTROLLER.focused.target and G.CONTROLLER.focused.target.config.id == 'fwt_profile_page' then
         snapped = true
@@ -359,14 +371,13 @@ end
 
 function G.UIDEF.profile_option(_profile)
   -- New
-  make_sure_profiles_on_page_are_loaded()
-  ensure_or_set_current_page()
 
   -- So the text prompt for entering a name was super misaligned, not even in the box
   -- no idea why
   -- but if you put a second input after it, *that* one works
   -- and if you put a second input *before* it, the *original* works
   -- I am not paid
+  print("DOING ITTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTT".._profile)
   funny_fix = create_text_input({
     id='another_name', -- if its not given an id, they both default to the same thing, so funny fix activates when you click the other one
     w = 0,
@@ -395,15 +406,21 @@ function G.UIDEF.profile_option(_profile)
   shrink(funny_fix)
 
   -- Original
-
   set_discover_tallies()
   G.focused_profile = _profile
-  local profile_data = get_compressed(G.focused_profile..'/'..'profile.jkr')
-    if profile_data ~= nil then
-      profile_data = STR_UNPACK(profile_data)
-      profile_data.name = profile_data.name or ("P".._profile)
-    end
-  G.PROFILES[_profile].name = profile_data and profile_data.name or ''
+
+  -- hiding this part bc it keeps crashing here and this stuff should be set earlier anyway
+  -- local profile_data = get_compressed(G.focused_profile..'/'..'profile.jkr')
+  -- if profile_data ~= nil then
+  --   profile_data = STR_UNPACK(profile_data)
+  --   profile_data.name = profile_data.name or ("P".._profile)
+  -- end
+  -- print("lllllllllllllllllllllllllllllllllllllllllllllllll")
+  -- print(G.PROFILES[_profile])
+  -- G.PROFILES[_profile].name = profile_data and profile_data.name or ''
+  -- if G.PROFILES[G.focused_profile] then
+  --   G.PROFILES[G.focused_profile].name = G.PROFILES[G.focused_profile].name or ("P"..G.focused_profile)
+  -- end
 
   local lwidth, rwidth, scale = 1, 1, 1
   G.CHECK_PROFILE_DATA = nil
@@ -431,8 +448,8 @@ function G.UIDEF.profile_option(_profile)
         }, 
         nodes={
           (
-            -- Prompt to enter or change name 
-            (_profile == G.SETTINGS.profile) or not profile_data) and {
+            -- Prompt to enter or change name if it's their profile or an empty one
+            (G.focused_profile == G.SETTINGS.profile) or (not G.PROFILES[G.focused_profile]) or (G.PROFILES[G.focused_profile] == {})) and {
               n=G.UIT.R, 
               config={
                 align = "cm",
@@ -447,11 +464,15 @@ function G.UIDEF.profile_option(_profile)
                   align='cm',
                   max_length = 16, 
                   prompt_text = localize('k_enter_name'),
-                  ref_table = G.PROFILES[_profile], ref_value = 'name',extended_corpus = true, keyboard_offset = 1,
+                  ref_table = G.PROFILES[G.focused_profile], ref_value = 'name',extended_corpus = true, keyboard_offset = 1,
                   callback = function() 
-                    local button_holder = G.OVERLAY_MENU:get_UIE_by_ID(_profile)
+                    print("------------------------------------")
+                    print(G.focused_profile)
+                    print(G.PROFILES[G.focused_profile].name)
+                    local button_holder = G.OVERLAY_MENU:get_UIE_by_ID(G.focused_profile)
                     compress_and_save(selected_profile_filename, {G.focused_profile})
                     G:save_settings()
+                    
                     G.FILE_HANDLER.force = true
                     G.UIDEF.fwt_profile_list_page(G.fwt_current_page)
                     G.FUNCS.fwt_change_profile_list_page({
@@ -479,7 +500,7 @@ function G.UIDEF.profile_option(_profile)
                 {
                   n=G.UIT.T, 
                   config={
-                    text = G.PROFILES[_profile].name, 
+                    text = G.PROFILES[G.focused_profile].name, 
                     scale = 0.45, 
                     colour = G.C.WHITE
                   }
