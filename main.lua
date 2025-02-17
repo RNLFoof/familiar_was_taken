@@ -369,6 +369,14 @@ function G.UIDEF.fwt_profile_list_page(_page)
   return {n=G.UIT.ROOT, config={align = "cm", padding = 0.1, colour=G.C.CLEAR}, nodes=fwt_profile_list}
 end
 
+-- https://stackoverflow.com/a/2705804
+function table_length(tabletabletabletabletabletabletabletabletabletabletabletabletabletabletabletabletable)
+  local count = 0
+  for _ in pairs(tabletabletabletabletabletabletabletabletabletabletabletabletabletabletabletabletable) do count = count + 1 end
+  return count
+end
+
+
 function G.UIDEF.profile_option(_profile)
   -- New
 
@@ -424,6 +432,11 @@ function G.UIDEF.profile_option(_profile)
 
   local lwidth, rwidth, scale = 1, 1, 1
   G.CHECK_PROFILE_DATA = nil
+  -- In vanilla, it just checks if it even exists.
+  -- right now, they get names right away, so it checks if they have *just* a name.
+  profile_is_empty = not((not G.PROFILES[G.focused_profile]) or table_length(G.PROFILES[G.focused_profile]) >= 2)
+  print(profile_is_empty)
+  
   local t = {
     n=G.UIT.ROOT,
     config={align = "cm", colour = G.C.BLACK, minh = 8.82, minw = 11.5, r = 0.1},
@@ -449,7 +462,7 @@ function G.UIDEF.profile_option(_profile)
         nodes={
           (
             -- Prompt to enter or change name if it's their profile or an empty one
-            (G.focused_profile == G.SETTINGS.profile) or (not G.PROFILES[G.focused_profile]) or (G.PROFILES[G.focused_profile] == {})) and {
+            (G.focused_profile == G.SETTINGS.profile) or profile_is_empty) and {
               n=G.UIT.R, 
               config={
                 align = "cm",
@@ -549,7 +562,7 @@ function G.UIDEF.profile_option(_profile)
                   nodes={{
                       n=G.UIT.T, 
                       config={
-                          text = _profile == G.SETTINGS.profile and localize('b_current_profile') or profile_data and localize('b_load_profile') or localize('b_create_profile'), 
+                          text = _profile == G.SETTINGS.profile and localize('b_current_profile') or (not profile_is_empty) and localize('b_load_profile') or localize('b_create_profile'), 
                           ref_value = 'load_button_text', 
                           scale = 0.5, 
                           colour = G.C.UI.TEXT_LIGHT
