@@ -212,7 +212,7 @@ function G.UIDEF.fwt_profile_list()
       func = (function()
         G.FUNCS.fwt_change_profile_list_page{
           cycle_config = {
-            current_option = G.fwt_current_page--+1 -- idk why the +1 is needed. there's a -1 in the foction that I also don't understand but it was in the source 
+            current_option = G.fwt_current_page 
           }
         }
         return true
@@ -265,7 +265,7 @@ function G.UIDEF.fwt_profile_list()
                   options = profile_pages, 
                   cycle_shoulders = true,
                   opt_callback = 'fwt_change_profile_list_page',
-                  current_option = initial_page,
+                  current_option = G.fwt_current_page,
                   colour = G.C.RED, 
                   no_pips = true, 
                   focus_args = {
