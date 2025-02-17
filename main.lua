@@ -150,7 +150,8 @@ G.FUNCS.fwt_change_profile_description = function(e)
     -- So it needs help :)
     -- This removes the arrow when you click off of it 
     local initial_button = G.OVERLAY_MENU:get_UIE_by_ID(G.SETTINGS.profile)
-    if initial_button and e.last_moved ~= nil then  -- e has like a million more values on the first manual selection. it's jank but I'm just checking for one of them
+    if initial_button and e.last_moved ~= nil  -- e has like a million more values on the first manual selection. it's jank but I'm just checking for one of them
+    and e.config.id ~= G.focused_profile then  -- if you select the same thing again, you don't want the arrow to be removed
       initial_button.config.chosen = nil
     end
     -- fwt_profile_list seems to be a 
