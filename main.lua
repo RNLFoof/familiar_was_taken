@@ -14,6 +14,10 @@ function automatically_load_profile()
   if selected_profile then
     --Game:load_profile seems to be for game start
     --G.FUNCS.load_profile seems to be for the menus
+    G.focused_profile = selected_profile[1]
+    G.SETTINGS.PROFILE = selected_profile[1]
+    print("it should be________________________________________________"..selected_profile[1])
+    G.PROFILES[selected_profile[1]] = {}  -- if this isn't here it won't load. idk
     Game:load_profile(selected_profile[1])
   end
 end
